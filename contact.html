@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ติดต่อเรา - Songkhla Vibe</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <style>
+        /* ==================== 🛠️ CSS Variables ลิงก์สีผูกธีม (ตรงตาม index.html) ==================== */
+        :root {
+            /* ☀️ โหมดสว่าง (Light Mode) */
+            --bg-color: #F8FAFC;
+            --primary-blue: #1E40AF;
+            --secondary-blue: #60A5FA;
+            --text-dark: #1E293B;
+            --text-light: #64748B;
+            --white: #FFFFFF;
+            --card-border: #E2E8F0;
+            --nav-bg: rgba(255, 255, 255, 0.9);
+            --transition: all 0.3s ease-in-out;
+        }
+
+        [data-theme="dark"] {
+            /* 🌙 โหมดมืด (Dark Mode) */
+            --bg-color: #0F172A;
+            --primary-blue: #3B82F6;
+            --secondary-blue: #60A5FA;
+            --text-dark: #F8FAFC;
+            --text-light: #94A3B8;
+            --white: #1E293B;
+            --card-border: #334155;
+            --nav-bg: rgba(30, 41, 59, 0.9);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Prompt', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-dark); line-height: 1.6; padding-top: 80px; transition: background-color 0.3s ease, color 0.3s ease; }
+
+        /* ==================== Navigation Bar ==================== */
+        nav {
+            position: fixed; top: 0; width: 100%; padding: 20px 50px;
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: var(--nav-bg); backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 1000; transition: var(--transition);
+        }
+        nav .logo { font-size: 1.5rem; font-weight: 600; color: var(--primary-blue); text-decoration: none; }
+        nav ul { display: flex; list-style: none; gap: 30px; }
+        nav ul li a { text-decoration: none; color: var(--text-dark); transition: var(--transition); }
+        nav ul li a:hover { color: var(--secondary-blue); }
+
+        /* ==================== Contact Layout Container ==================== */
+        .contact-container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 40px 20px;
+            background: var(--white);
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 40px;
+            border: 1px solid var(--card-border);
+            transition: var(--transition);
+        }
+
+        @media (max-width: 992px) {
+            .contact-container { grid-template-columns: 1fr; gap: 30px; margin: 20px auto; }
+        }
+
+        /* ฝั่งซ้าย: แผนที่ */
+        .contact-map-side { display: flex; flex-direction: column; height: 100%; }
+        #contact-map { height: 480px; width: 100%; border-radius: 16px; border: 1px solid var(--card-border); z-index: 1; }
+
+        /* ปรับสีแผนที่ Leaflet ในโหมดมืด */
+        [data-theme="dark"] .leaflet-tile { filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg); }
+        [data-theme="dark"] .leaflet-popup-content-wrapper, [data-theme="dark"] .leaflet-popup-tip { background: #1E293B; color: #F8FAFC; }
+
+        /* ฝั่งขวา: ข้อมูลการติดต่อ */
+        .contact-info-side { display: flex; flex-direction: column; justify-content: center; gap: 25px; padding-right: 20px; }
+        .info-item { display: flex; gap: 15px; align-items: flex-start; }
+        .info-item i { font-size: 1.3rem; color: var(--primary-blue); margin-top: 5px; width: 25px; text-align: center; }
+        .info-text p { color: var(--text-dark); font-size: 1rem; }
+
+        .divider { height: 1px; background-color: var(--card-border); margin: 5px 0; }
+        .business-hours h5, .rules h5 { font-size: 1.05rem; color: var(--text-dark); margin-bottom: 8px; font-weight: 600; }
+        .business-hours p, .rules ul { color: var(--text-light); font-size: 0.95rem; }
+        .rules ul { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+
+        /* ==================== Team Section (เพิ่มใหม่) ==================== */
+        .team-container {
+            max-width: 1200px;
+            margin: 0 auto 50px auto;
+            padding: 50px 20px;
+            background: var(--white);
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+            border: 1px solid var(--card-border);
+            transition: var(--transition);
+            text-align: center;
+        }
+        .team-title {
+            font-size: 1.4rem;
+            color: var(--text-dark);
+            margin-bottom: 40px;
+            font-weight: 600;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+        }
+        .team-title i {
+            color: #8B5CF6; /* สีม่วงคล้ายในรูป */
+            font-size: 1.5rem;
+        }
+        .team-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .team-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            transition: var(--transition);
+            border-radius: 12px;
+        }
+        .team-item:hover {
+            background-color: var(--bg-color);
+            transform: translateX(5px);
+        }
+        .team-number {
+            background-color: #093688; /* สีแดงเข้มตามรูป */
+            color: #FFFFFF;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            font-weight: 600;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(74, 222, 241, 0.2);
+        }
+        .team-name {
+            color: var(--text-dark);
+            font-weight: 500;
+            flex-grow: 1;
+            text-align: left;
+            margin-left: 25px;
+            font-size: 1.05rem;
+        }
+        .team-id {
+            color: var(--text-light);
+            font-size: 0.85rem;
+            padding: 6px 14px;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            background-color: transparent;
+            font-family: monospace;
+            letter-spacing: 0.5px;
+        }
+        .team-footer-text {
+            margin-top: 40px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        footer { text-align: center; padding: 30px; color: var(--text-light); border-top: 1px solid var(--card-border); margin-top: 10px; transition: var(--transition); }
+
+        /* ==================== 🌗 ปุ่มปรับโหมดมืด/สว่าง ซ้ายล่าง ลิงก์ธีมกัน 🌗 ==================== */
+        .theme-toggle-btn {
+            position: fixed; bottom: 30px; left: 30px; background-color: var(--white);
+            color: var(--text-dark); border: 1px solid var(--card-border); width: 55px; height: 55px;
+            border-radius: 50%; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            display: flex; align-items: center; justify-content: center; font-size: 1.4rem;
+            transition: var(--transition); z-index: 1000;
+        }
+        .theme-toggle-btn:hover { transform: scale(1.1) rotate(15deg); box-shadow: 0 6px 20px rgba(0,0,0,0.15); background-color: var(--primary-blue); color: #FFFFFF; }
+
+        /* ==================== AI Chat UI Widget ==================== */
+        .chat-toggle {
+            position: fixed; bottom: 30px; right: 30px; background-color: var(--primary-blue);
+            color: #ffffff; border: none; padding: 15px 25px; border-radius: 30px;
+            font-size: 1rem; cursor: pointer; box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
+            transition: var(--transition); z-index: 1000; display: flex; align-items: center; gap: 8px;
+        }
+        .chat-toggle:hover { transform: translateY(-5px); background-color: var(--secondary-blue); }
+
+        .chat-box {
+            position: fixed; bottom: 90px; right: 30px; width: 380px; height: 520px;
+            background-color: var(--white); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: none; flex-direction: column; overflow: hidden; z-index: 1000; border: 1px solid var(--card-border);
+        }
+        .chat-header { background-color: var(--primary-blue); color: #FFFFFF; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .chat-header h4 { font-weight: 500; display: flex; align-items: center; gap: 8px; }
+        .chat-header button { background: none; border: none; color: #FFFFFF; font-size: 1.2rem; cursor: pointer; }
+
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; background-color: var(--bg-color); display: flex; flex-direction: column; gap: 15px; }
+        .message { max-width: 85%; padding: 12px 16px; border-radius: 14px; font-size: 0.95rem; line-height: 1.5; word-wrap: break-word; }
+        .ai-message { background-color: var(--white); color: var(--text-dark); align-self: flex-start; border-bottom-left-radius: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid var(--card-border); }
+        .user-message { background-color: var(--primary-blue); color: #FFFFFF; align-self: flex-end; border-bottom-right-radius: 0; box-shadow: 0 4px 12px rgba(30, 64, 175, 0.15); }
+        
+        .chat-input-area { display: flex; padding: 15px; background-color: var(--white); border-top: 1px solid var(--card-border); gap: 8px; }
+        .chat-input-area input { flex: 1; padding: 10px 18px; border: 1px solid var(--card-border); border-radius: 20px; outline: none; font-size: 0.95rem; background-color: var(--bg-color); color: var(--text-dark); transition: var(--transition); }
+        .chat-input-area button { background-color: var(--primary-blue); color: #FFFFFF; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; transition: var(--transition); font-weight: 500; }
+
+        @media (max-width: 768px) {
+            nav { padding: 15px 20px; } nav ul { display: none; }
+            .team-container { padding: 30px 15px; margin: 0 15px 40px 15px; }
+            .team-item { flex-wrap: wrap; justify-content: center; text-align: center; gap: 10px; }
+            .team-name { margin-left: 0; width: 100%; text-align: center; }
+            .chat-box { width: 92%; right: 4%; bottom: 80px; height: 70vh; }
+            .chat-toggle { right: 20px; bottom: 20px; }
+            .theme-toggle-btn { left: 20px; bottom: 20px; width: 48px; height: 48px; font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav id="navbar">
+        <a href="index.html" class="logo">Songkhla Vibe.</a>
+        <ul>
+            <li><a href="index.html#home">หน้าแรก</a></li>
+            <li><a href="index.html#explore">สำรวจเมือง</a></li>
+            <li><a href="attractions.html">ข้อมูลสถานที่</a></li>
+            <li><a href="contact.html" style="color: var(--primary-blue); font-weight: 600;">ติดต่อ</a></li>
+        </ul>
+    </nav>
+
+    <main class="contact-container">
+        
+        <section class="contact-map-side">
+            <div id="contact-map"></div>
+        </section>
+
+        <section class="contact-info-side">
+            <div class="info-item">
+                <i class="fa-solid fa-location-dot"></i>
+                <div class="info-text">
+                    <p>วิทยาลัยอาชีวศึกษาสงขลา ตำบลบ่อยาง อำเภอเมืองสงขลา จังหวัดสงขลา 90000</p>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <i class="fa-solid fa-phone"></i>
+                <div class="info-text">
+                    <p>Tel : +66 99 623 1943</p>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <i class="fa-solid fa-envelope"></i>
+                <div class="info-text">
+                    <p>68219100032@songkhlavc.ac.th</p>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="business-hours">
+                <h5>เวลาทำการ : จันทร์ - ศุกร์ </h5>
+                <p> 07:45 น. – 17:00 น.</p>
+                <p style="color: var(--primary-blue); font-weight: 500; margin-top: 4px;">*เวลาเข้าเรียนของนักเรียนนักศึกษา</p>
+            </div>
+
+            <div class="rules">
+                <h5>ข้อห้ามในการเข้าชมสถานที่ :</h5>
+                <ul>
+                    <li>1. ห้ามสูบบุหรี่ หรือทิ้งขยะไม่เป็นที่ภายในบริเวณศูนย์บริการ</li>
+                    <li>2. กรุณารักษากฎระเบียบและไม่ส่งเสียงดังรบกวนผู้อื่น</li>
+                </ul>
+            </div>
+        </section>
+
+    </main>
+
+    <section class="team-container" id="team">
+        <h3 class="team-title">
+            <i class="fa-solid fa-star"></i> ผู้จัดทำ
+        </h3>
+        <div class="team-list">
+            <div class="team-item">
+                <span class="team-number">1</span>
+                <span class="team-name">นายฐิติพงศ์ พันธ์ยักษ์</span>
+                <span class="team-id">ปวช.2/2 ทธด. 032</span>
+            </div>
+            <div class="team-item">
+                <span class="team-number">2</span>
+                <span class="team-name">นายพีรพัทธ์ พรมทอง</span>
+                <span class="team-id">ปวช.2/2 ทธด. 035</span>
+            </div>
+            <div class="team-item">
+                <span class="team-number">3</span>
+                <span class="team-name">นายมาติล มูซอ</span>
+                <span class="team-id">ปวช.2/2 ทธด. 038</span>
+            </div>
+            <div class="team-item">
+                <span class="team-number">4</span>
+                <span class="team-name">นายฮัมดาน ช่างดี</span>
+                <span class="team-id">ปวช.2/2 ทธด. 044</span>
+            </div>
+            <div class="team-item">
+                <span class="team-number">5</span>
+                <span class="team-name">นายอัครเดช ขาววงค์</span>
+                <span class="team-id">ปวช.2/2 ทธด. 042</span>
+            </div>
+        </div>
+        <p class="team-footer-text">วิทยาลัยอาชีวศึกษาสงขลา</p>
+    </section>
+    <footer>
+        <p>© 2026 Songkhla Vibe. ออกแบบด้วยความรักเพื่อจังหวัดสงขลา. นายฐิติพงษ์ พันธ์ยักษ์ ปวช.2/2 เทคโนโลยีธุรกิจดิจิทัล</p>
+    </footer>
+
+    <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="เปลี่ยนโหมดหน้าจอ">
+        <i class="fa-solid fa-moon" id="themeIcon"></i>
+    </button>
+
+    <button class="chat-toggle" id="chatToggle"><i class="fa-solid fa-comments"></i> คุยกับไกด์</button>
+    <div class="chat-box" id="chatBox">
+        <div class="chat-header">
+            <h4>👨🏻‍🦱 Thitipong AI Guide</h4>
+            <button id="closeChat">✕</button>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-area">
+            <input type="text" id="userInput" placeholder="พิมพ์ถามคำถามที่นี่...">
+            <button id="sendBtn">ส่ง</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <script>
+        // ==================== 1. 🌗 ระบบควบคุม Dark / Light Mode ลิงก์ธีมข้ามหน้า 🌗 ====================
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            const themeIcon = document.getElementById('themeIcon');
+            if (savedTheme === 'dark') {
+                themeIcon.className = 'fa-solid fa-sun';
+            } else {
+                themeIcon.className = 'fa-solid fa-moon';
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            let newTheme = 'light';
+            const themeIcon = document.getElementById('themeIcon');
+
+            if (currentTheme === 'light') {
+                newTheme = 'dark';
+                themeIcon.className = 'fa-solid fa-sun';
+            } else {
+                newTheme = 'light'; // ⚠️ แก้ไขตรงนี้: เปลี่ยนจาก 'dark' กลับมาเป็น 'light'
+                themeIcon.className = 'fa-solid fa-moon';
+        }
+
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme); // เซฟลงเครื่อง ทำให้หน้า index.html อัปเดตตามด้วยทันที
+}
+
+        // ==================== 2. เอฟเฟกต์แถบเมนูด้านบนยามเลื่อนสกอร์ ====================
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.style.padding = '10px 50px';
+                navbar.style.boxShadow = '0 4px 20px rgba(0,0,0,0.1)';
+            } else {
+                navbar.style.padding = '20px 50px';
+                navbar.style.boxShadow = '0 2px 10px rgba(0,0,0,0.05)';
+            }
+        });
+        
+        // ==================== 3. การแสดงผลแผนที่ Leaflet ====================
+        const officeLat = 7.193563;
+        const officeLng = 100.594491;
+
+        const contactMap = L.map('contact-map').setView([officeLat, officeLng], 15);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(contactMap);
+
+        const officeMarker = L.marker([officeLat, officeLng]).addTo(contactMap);
+        officeMarker.bindPopup("<b>ศูนย์บริการ Songkhla Vibe</b><br>วิทยาลัยอาชีวศึกษาสงขลา").openPopup();
+
+        // ==================== 4. ระบบควบคุมกล่องแชทบอท AI หน้าติดต่อ ====================
+        const chatToggle = document.getElementById('chatToggle');
+        const chatBox = document.getElementById('chatBox');
+        const closeChat = document.getElementById('closeChat');
+        const sendBtn = document.getElementById('sendBtn');
+        const userInput = document.getElementById('userInput');
+        const chatMessages = document.getElementById('chatMessages');
+
+        chatToggle.addEventListener('click', () => {
+            chatBox.style.display = chatBox.style.display === 'flex' ? 'none' : 'flex';
+            scrollToBottom();
+        });
+        closeChat.addEventListener('click', () => { chatBox.style.display = 'none'; });
+        function scrollToBottom() { chatMessages.scrollTop = chatMessages.scrollHeight; }
+
+        function appendMessage(text, className) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${className}`;
+            msgDiv.innerHTML = text;
+            chatMessages.appendChild(msgDiv);
+            scrollToBottom();
+        }
+
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            appendMessage(text, 'user-message');
+            userInput.value = '';
+
+            const typingId = 'typing-' + Date.now();
+            const typingMsg = document.createElement('div');
+            typingMsg.className = 'message ai-message';
+            typingMsg.id = typingId;
+            typingMsg.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังคิด...';
+            chatMessages.appendChild(typingMsg);
+            scrollToBottom();
+
+            try {
+                const response = await fetch('http://localhost:6767/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+                
+                const data = await response.json();
+                document.getElementById(typingId).remove();
+                appendMessage(data.reply, 'ai-message');
+
+            } catch (error) {
+                document.getElementById(typingId).remove();
+                appendMessage('⚠️ ไม่สามารถเชื่อมต่อกับ AI หลังบ้านได้ กรุณาตรวจสอบว่าเปิดรันเซิร์ฟเวอร์บนพอร์ต 6767 หรือยังครับ', 'ai-message');
+                console.error(error);
+            }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+
+        // โหลดข้อมูลครั้งแรกเมื่อหน้าเว็บทำงานเสร็จสิ้น
+        window.onload = function() {
+            initTheme(); // ดึงค่าสีที่เลือกจากหน้าแรกมาใช้ทันที
+            appendMessage("ยินดีต้อนรับสู่หน้าติดต่อเราครับ! ผมคือ <b>Thitipong AI Guide</b> หากคุณมีคำถามเรื่องเส้นทางมาวิทยาลัยอาชีวศึกษาสงขลา หรือต้องการให้ช่วยวางแผนเดินทางท่องเที่ยวจุดอื่นต่อ พิมพ์ถามผมตรงนี้ได้เลยนะครับ!", "ai-message");
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ข้อมูลสถานที่ท่องเที่ยว - Songkhla Vibe</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* ==================== 🛠️ CSS Variables (โหมดมืด/สว่าง) ==================== */
+        :root {
+            --bg-color: #F8FAFC;
+            --primary-blue: #1E40AF;
+            --secondary-blue: #60A5FA;
+            --text-dark: #1E293B;
+            --text-light: #64748B;
+            --white: #FFFFFF;
+            --card-border: #F1F5F9;
+            --nav-bg: rgba(255, 255, 255, 0.9);
+            --transition: all 0.3s ease-in-out;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0F172A;
+            --primary-blue: #3B82F6;
+            --secondary-blue: #60A5FA;
+            --text-dark: #F8FAFC;
+            --text-light: #94A3B8;
+            --white: #1E293B;
+            --card-border: #334155;
+            --nav-bg: rgba(30, 41, 59, 0.9);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Prompt', sans-serif; }
+        html { scroll-behavior: smooth; }
+        body { background-color: var(--bg-color); color: var(--text-dark); line-height: 1.6; transition: background-color 0.3s ease, color 0.3s ease; padding-top: 100px; }
+
+        /* ==================== Navigation ==================== */
+        nav {
+            position: fixed; top: 0; width: 100%; padding: 20px 50px;
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: var(--nav-bg); backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 1000; transition: var(--transition);
+        }
+        nav .logo { font-size: 1.5rem; font-weight: 600; color: var(--primary-blue); text-decoration: none; }
+        nav ul { display: flex; list-style: none; gap: 30px; }
+        nav ul li a { text-decoration: none; color: var(--text-dark); transition: var(--transition); }
+        nav ul li a:hover { color: var(--secondary-blue); }
+        nav ul li a.active { color: var(--primary-blue); font-weight: 500; }
+
+        /* ==================== Main Content Layout ==================== */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        
+        .page-header { text-align: center; margin-bottom: 40px; }
+        .page-header h1 { font-size: 2.5rem; color: var(--primary-blue); margin-bottom: 10px; }
+        .page-header p { color: var(--text-light); font-size: 1.1rem; }
+
+        /* ==================== Attractions Detailed Grid ==================== */
+        .attractions-list { display: flex; flex-direction: column; gap: 40px; }
+        
+        .detail-card { 
+            background: var(--white); border-radius: 16px; overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02); border: 1px solid var(--card-border);
+            display: grid; grid-template-columns: 40% 60%; transition: var(--transition);
+        }
+        @media (max-width: 768px) { .detail-card { grid-template-columns: 1fr; } }
+        
+        .detail-card:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(29, 78, 216, 0.08); }
+        
+        .image-box { position: relative; width: 100%; height: 100%; min-height: 250px; background-color: #e2e8f0; }
+        .image-box img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; }
+        
+        .info-box { padding: 30px; display: flex; flex-direction: column; justify-content: center; }
+        
+        .tag { 
+            display: inline-block; align-self: flex-start; padding: 4px 12px; 
+            border-radius: 20px; font-size: 0.8rem; font-weight: 500; margin-bottom: 12px; 
+            background-color: rgba(59, 130, 246, 0.1); color: var(--primary-blue);
+        }
+        
+        .info-box h2 { font-size: 1.6rem; color: var(--primary-blue); margin-bottom: 12px; font-weight: 600; }
+        .info-text { color: var(--text-dark); font-size: 0.95rem; margin-bottom: 15px; }
+        
+        .highlight-box { 
+            background-color: var(--bg-color); border-left: 4px solid var(--primary-blue); 
+            padding: 12px; border-radius: 0 8px 8px 0; font-size: 0.9rem; color: var(--text-light);
+            transition: var(--transition);
+        }
+        .highlight-box b { color: var(--text-dark); }
+
+        /* ==================== Footer & Utilities ==================== */
+        footer { background-color: var(--white); text-align: center; padding: 30px; color: var(--text-light); border-top: 1px solid var(--card-border); margin-top: 60px; transition: var(--transition); }
+
+        .theme-toggle-btn {
+            position: fixed; bottom: 30px; left: 30px; background-color: var(--white);
+            color: var(--text-dark); border: 1px solid var(--card-border); width: 55px; height: 55px;
+            border-radius: 50%; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            display: flex; align-items: center; justify-content: center; font-size: 1.4rem;
+            transition: var(--transition); z-index: 1000;
+        }
+        .theme-toggle-btn:hover { transform: scale(1.1) rotate(15deg); background-color: var(--primary-blue); color: #FFFFFF; }
+
+        /* ==================== AI Chat UI Widget Styles ==================== */
+        .chat-toggle {
+            position: fixed; bottom: 30px; right: 30px; background-color: var(--primary-blue);
+            color: #FFFFFF; border: none; padding: 15px 25px; border-radius: 30px;
+            font-size: 1rem; cursor: pointer; box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
+            transition: var(--transition); z-index: 1000; display: flex; align-items: center; gap: 8px;
+        }
+        .chat-toggle:hover { transform: translateY(-5px); background-color: var(--secondary-blue); }
+
+        .chat-box {
+            position: fixed; bottom: 90px; right: 30px; width: 380px; height: 520px;
+            background-color: var(--white); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: none; flex-direction: column; overflow: hidden; z-index: 1000; border: 1px solid var(--card-border);
+        }
+        .chat-header { background-color: var(--primary-blue); color: #FFFFFF; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .chat-header h4 { font-weight: 500; display: flex; align-items: center; gap: 8px; }
+        .chat-header button { background: none; border: none; color: #FFFFFF; font-size: 1.2rem; cursor: pointer; }
+
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; background-color: var(--bg-color); display: flex; flex-direction: column; gap: 15px; }
+        .message { max-width: 85%; padding: 12px 16px; border-radius: 14px; font-size: 0.95rem; line-height: 1.5; word-wrap: break-word; }
+        .ai-message { background-color: var(--white); color: var(--text-dark); align-self: flex-start; border-bottom-left-radius: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid var(--card-border); }
+        .user-message { background-color: var(--primary-blue); color: #FFFFFF; align-self: flex-end; border-bottom-right-radius: 0; box-shadow: 0 4px 12px rgba(30, 64, 175, 0.15); }
+        
+        .chat-input-area { display: flex; padding: 15px; background-color: var(--white); border-top: 1px solid var(--card-border); gap: 8px; }
+        .chat-input-area input { flex: 1; padding: 10px 18px; border: 1px solid var(--card-border); border-radius: 20px; outline: none; font-size: 0.95rem; background-color: var(--bg-color); color: var(--text-dark); transition: var(--transition); }
+        .chat-input-area button { background-color: var(--primary-blue); color: #FFFFFF; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; transition: var(--transition); font-weight: 500; }
+
+        @media (max-width: 768px) {
+            nav { padding: 15px 20px; } nav ul { display: none; }
+            .info-box { padding: 20px; }
+            body { padding-top: 80px; }
+            .chat-box { width: 92%; right: 4%; bottom: 80px; height: 70vh; }
+            .chat-toggle { right: 20px; bottom: 20px; }
+            .theme-toggle-btn { left: 20px; bottom: 20px; width: 48px; height: 48px; font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav id="navbar">
+        <a href="index.html" class="logo">Songkhla Vibe.</a>
+        <ul>
+            <li><a href="index.html#home">หน้าแรก</a></li>
+            <li><a href="index.html#explore">สำรวจเมือง</a></li>
+            <li><a href="attractions.html" class="active">ข้อมูลสถานที่</a></li>
+            <li><a href="contact.html">ติดต่อ</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <header class="page-header">
+            <h1><i class="fa-solid fa-map-location-dot"></i> คู่มือนำเที่ยวเมืองสงขลา</h1>
+            <p>เจาะลึกข้อมูล ประวัติความเป็นมา และจุดไฮไลท์สำคัญของสถานที่ท่องเที่ยวห้ามพลาด</p>
+        </header>
+
+        <section class="attractions-list">
+
+            <div class="detail-card">
+                <div class="image-box"><img src="https://images.unsplash.com/photo-1542668595-fa9394e5b686?auto=format&fit=crop&q=80&w=800" alt="หาดสมิหลา"></div>
+                <div class="info-box">
+                    <span class="tag"><i class="fa-solid fa-camera"></i> สายถ่ายรูป / ธรรมชาติ</span>
+                    <h2>หาดสมิหลา</h2>
+                    <div class="info-text"><p>ชายทะเลที่มีชื่อเสียงที่สุดของจังหวัดสงขลา โดดเด่นด้วยทรายขาวสะอาด ทิวสนร่มรื่น และมีทัศนียภาพของเกาะหนูเกาะแมวเป็นฉากหลังที่สวยงาม</p></div>
+                    <div class="highlight-box"><b>🌟 จุดไฮไลท์:</b> ถ่ายรูปคู่กับ "รูปปั้นนางเงือกทอง" สัญลักษณ์สำคัญที่พลาดไม่ได้</div>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <div class="image-box"><img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80&w=800" alt="เขาตังกวน"></div>
+                <div class="info-box">
+                    <span class="tag"><i class="fa-solid fa-gopuram"></i> สายมู / ชมทิวทัศน์</span>
+                    <h2>เขาตังกวน</h2>
+                    <div class="info-text"><p>ภูเขาลูกย่อมใกล้ชายหาด บนยอดเป็นที่ประดิษฐานพระเจดีย์หลวงเก่าแก่คู่บ้านคู่เมือง และมีศาลาพระวิหารแดงสถาปัตยกรรมคลาสสิก</p></div>
+                    <div class="highlight-box"><b>🌟 จุดไฮไลท์:</b> นั่งลิฟต์ขึ้นไปชมทัศนียภาพเมืองสงขลาและทะเลสองฝั่งแบบ 360 องศา</div>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <div class="image-box"><img src="https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&q=80&w=800" alt="ย่านเมืองเก่าสงขลา"></div>
+                <div class="info-box">
+                    <span class="tag"><i class="fa-solid fa-building-heritage"></i> วัฒนธรรม / ประวัติศาสตร์</span>
+                    <h2>ย่านเมืองเก่าสงขลา</h2>
+                    <div class="info-text"><p>พื้นที่ประวัติศาสตร์บนถนนสามสาย (นครนอก นครใน นางงาม) รายล้อมด้วยอาคารตึกแถวโบราณหลากวัฒนธรรม ไทย จีน มุสลิม</p></div>
+                    <div class="highlight-box"><b>🌟 จุดไฮไลท์:</b> เยี่ยมชมโรงสีแดง "หับ โห้ หิ้น" และสถาปัตยกรรมสไตล์ชิโน-โปรตุกีส</div>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <div class="image-box"><img src="https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&q=80&w=800" alt="สะพานติณสูลานนท์"></div>
+                <div class="info-box">
+                    <span class="tag"><i class="fa-solid fa-bridge"></i> สิ่งก่อสร้าง / ชมวิว</span>
+                    <h2>สะพานติณสูลานนท์</h2>
+                    <div class="info-text"><p>สะพานคอนกรีตที่ยาวที่สุดในประเทศไทย เชื่อมเกาะยอกับผืนแผ่นดินใหญ่สองฝั่ง สร้างขึ้นเพื่อเกียรติแก่พลเอกเปรม ติณสูลานนท์</p></div>
+                    <div class="highlight-box"><b>🌟 จุดไฮไลท์:</b> ขับรถรับลมชมวิววิถีชีวิตชาวประมงพื้นบ้านในทะเลสาบสงขลาแบบพาโนรามา</div>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <div class="image-box"><img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=800" alt="เกาะยอ"></div>
+                <div class="info-box">
+                    <span class="tag"><i class="fa-solid fa-house-user"></i> วิถีชุมชน / ธรรมชาติ</span>
+                    <h2>เกาะยอ</h2>
+                    <div class="info-text"><p>เกาะกลางทะเลสาบสงขลาที่มีเอกลักษณ์ มีชื่อเสียงด้านการทำสวนผลไม้แบบสมรม, การเลี้ยงปลากะพงขาวในกระชัง และผ้าทอเกาะยอโบราณ</p></div>
+                    <div class="highlight-box"><b>🌟 จุดไฮไลท์:</b> ลิ้มรสสเต็กหรืออาหารทะเลสดๆ พร้อมชมพระอาทิตย์ตกดิน ณ โฮมสเตย์รอบเกาะ</div>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <div class="image-box"><img src="https://images.unsplash.com/photo-1609137144813-2d2077227d81?auto=format&fit=crop&q=80&w=800" alt="วัดแหลมพ้อ"></div>
+                <div class="info-box">
+                    <span class="tag"><i class="fa-solid fa-dharmachakra"></i> สายมู / วัฒนธรรม</span>
+                    <h2>วัดแหลมพ้อ (เกาะยอ)</h2>
+                    <div class="info-text"><p>หนึ่งในวัดเก่าแก่ของจังหวัดสงขลา มีอายุมากกว่า 200 ปี ตั้งอยู่ใกล้เชิงสะพานติณสูลานนท์ ฝั่งเกาะยอ</p></div>
+                    <div class="highlight-box"><b>🌟 จุดไฮไลท์:</b> กราบสักการะ "พระนอนปางโปรดอสุรินทราหู" พระพุทธรูปปางไสยาสน์องค์ใหญ่ที่สุดในไทย</div>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <div class="image-box"><img src="https://images.unsplash.com/photo-1566121318359-20f4f9f4f30c?auto=format&fit=crop&q=80&w=800" alt="พิพิธภัณฑ์"></div>
+                <div class="info-box">
+                    <span class="tag"><i class="fa-solid fa-museum"></i> ประวัติศาสตร์ / การเรียนรู้</span>
+                    <h2>พิพิธภัณฑสถานแห่งชาติ สงขลา</h2>
+                    <div class="info-text"><p>อาคารสถาปัตยกรรมจีนผสมยุโรปโบราณ เดิมเป็นจวนผู้ว่าราชการเมือง ภายในจัดแสดงโบราณวัตถุอันล้ำค่าที่บอกเล่าประวัติศาสตร์ภาคใต้</p></div>
+                    <div class="highlight-box"><b>🌟 จุดไฮไลท์:</b> ถ่ายรูปกับตัวอาคารสีขาวแดงสุดคลาสสิก และชมโบราณวัตถุศิลปะศรีวิชัย</div>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <div class="image-box"><img src="https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?auto=format&fit=crop&q=80&w=800" alt="สตรีทอาร์ต"></div>
+                <div class="info-box">
+                    <span class="tag"><i class="fa-solid fa-palette"></i> สายถ่ายรูป / ศิลปะ</span>
+                    <h2>สตรีทอาร์ตเมืองเก่าสงขลา</h2>
+                    <div class="info-text"><p>ภาพวาดฝาผนังสะท้อนวิถีชีวิต วัฒนธรรม และเรื่องราวประจำวันของคนสงขลา ที่ซ่อนตัวอยู่ตามตรอกซอกซอยในย่านตึกโบราณ</p></div>
+                    <div class="highlight-box"><b>🌟 จุดไฮไลท์:</b> ภาพวาด "ร้านน้ำชาฟูเจา" และภาพวิถีชีวิตวัยเด็กที่น่ารักชวนถ่ายรูปเช็คอิน</div>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <div class="image-box"><img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&q=80&w=800" alt="ทะเลสาบสงขลา"></div>
+                <div class="info-box">
+                    <span class="tag"><i class="fa-solid fa-water"></i> ธรรมชาติ / ล่องเรือ</span>
+                    <h2>ทะเลสาบสงขลา</h2>
+                    <div class="info-text"><p>ทะเลสาบแห่งเดียวในประเทศไทยที่เป็นทะเลสาบแบบลากูนขนาดใหญ่ มีระบบนิเวศแบบ 3 น้ำ (น้ำจืด น้ำกร่อย น้ำเค็ม) ที่สมบูรณ์</p></div>
+                    <div class="highlight-box"><b>🌟 จุดไฮไลท์:</b> นั่งเรือหางยาวชมทัศนียภาพ และสัมผัสวิถีประมงโพงพางโบราณ</div>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <div class="image-box"><img src="https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&q=80&w=800" alt="ตลาดกิมหยง"></div>
+                <div class="info-box">
+                    <span class="tag"><i class="fa-solid fa-bag-shopping"></i> ช้อปปิ้ง / ของฝาก</span>
+                    <h2>ตลาดกิมหยง (อ.หาดใหญ่)</h2>
+                    <div class="info-text"><p>ตลาดค้าขายชื่อดังระดับตำนานในอำเภอหาดใหญ่ แหล่งรวมสินค้านำเข้า ของกินเล่น ผลไม้สด ขนม และถั่วอัลมอนด์เม็ดมะม่วงหิมพานต์ราคาถูก</p></div>
+                    <div class="highlight-box"><b>🌟 จุดไฮไลท์:</b> แหล่งรวมของฝากยอดฮิตอย่าง เม็ดมะม่วงหิมพานต์คั่ว บ๊วย และผลไม้อบแห้ง</div>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <div class="image-box"><img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&q=80&w=800" alt="ตลาดน้ำคลองแห"></div>
+                <div class="info-box">
+                    <span class="tag"><i class="fa-solid fa-utensils"></i> ตลาดน้ำ / สายกิน</span>
+                    <h2>ตลาดน้ำคลองแห</h2>
+                    <div class="info-text"><p>ตลาดน้ำแห่งแรกของภาคใต้ พ่อค้าแม่ค้าจะพายเรือมาจอดเรียงรายขายอาหารพื้นบ้าน ขนมไทย และเครื่องดื่มในภาชนะธรรมชาติ</p></div>
+                    <div class="highlight-box"><b>🌟 จุดไฮไลท์:</b> ซื้ออาหารและน้ำกระบอกไม้ไผ่จากพ่อค้าแม่ค้าในเรือพาย บรรยากาศย้อนยุค</div>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <div class="image-box"><img src="https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&q=80&w=800" alt="ตลาดน้ำคลองแดน"></div>
+                <div class="info-box">
+                    <span class="tag"><i class="fa-solid fa-store"></i> ตลาดวิถีชุมชน / ย้อนยุค</span>
+                    <h2>ตลาดน้ำคลองแดน</h2>
+                    <div class="info-text"><p>ตลาดน้ำกึ่งวิถีชุมชนโบราณ ตั้งอยู่บนรอยต่อสองจังหวัด (สงขลา-นครศรีธรรมราช) โดดเด่นด้วยบ้านไม้เก่าริมคลองที่เชื่อมถึงกัน</p></div>
+                    <div class="highlight-box"><b>🌟 จุดไฮไลท์:</b> เดินสะพานไม้ชมตลาดโบราณสามคลอง ดื่มด่ำธรรมชาติและขนมท้องถิ่น</div>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <div class="image-box"><img src="https://images.unsplash.com/photo-1432406186174-23278d0afdd0?auto=format&fit=crop&q=80&w=800" alt="น้ำตกโตนงาช้าง"></div>
+                <div class="info-box">
+                    <span class="tag"><i class="fa-solid fa-tree"></i> ธรรมชาติ / น้ำตก</span>
+                    <h2>น้ำตกโตนงาช้าง</h2>
+                    <div class="info-text"><p>น้ำตกที่มีชื่อเสียงและสวยงามที่สุดแห่งหนึ่งในภาคใต้ ตั้งอยู่ในเขตรักษาพันธุ์สัตว์ป่าโตนงาช้าง มีทั้งหมด 7 ชั้นลึกเข้าไปในผืนป่า</p></div>
+                    <div class="highlight-box"><b>🌟 จุดไฮไลท์:</b> ชั้นที่ 3 "โตนงาช้าง" สายน้ำตกจะแยกออกเป็นสองสาย คล้ายงาช้างสวยงามมาก</div>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <div class="image-box"><img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&q=80&w=800" alt="ถ้ำครก"></div>
+                <div class="info-box">
+                    <span class="tag"><i class="fa-solid fa-mountain"></i> ผจญภัย / ถ้ำธรรมชาติ</span>
+                    <h2>ถ้ำครก (อ.สะบ้าย้อย)</h2>
+                    <div class="info-text"><p>ถ้ำธรรมชาติที่มีหินงอกหินย้อยรูปทรงแปลกตา ภายในมีลักษณะคล้ายครกตำข้าวโบราณตามตำนานเล่าขานของท้องถิ่น</p></div>
+                    <div class="highlight-box"><b>🌟 จุดไฮไลท์:</b> เดินสำรวจหินงอกหินย้อยประกายระยิบระยับเมื่อต้องแสงไฟภายในถ้ำ</div>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <div class="image-box"><img src="https://images.unsplash.com/photo-1523731407965-2430cd12f5e4?auto=format&fit=crop&q=80&w=800" alt="ถ้ำน้ำใส"></div>
+                <div class="info-box">
+                    <span class="tag"><i class="fa-solid fa-person-hiking"></i> ผจญภัย / Unseen</span>
+                    <h2>ถ้ำน้ำใส</h2>
+                    <div class="info-text"><p>ถ้ำแอ่งน้ำธรรมชาติใต้ภูเขาที่มีน้ำใสสะอาดจนมองเห็นพื้นหินด้านล่าง เป็นจุดท่องเที่ยวผจญภัยเชิงอนุรักษ์ยอดนิยม</p></div>
+                    <div class="highlight-box"><b>🌟 จุดไฮไลท์:</b> แอ่งน้ำใสเย็นกิ๊กกลางถ้ำมืด สวยงามแปลกตา เหมาะกับสายลุย</div>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <div class="image-box"><img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&q=80&w=800" alt="น้ำตกโตนปลิว"></div>
+                <div class="info-box">
+                    <span class="tag"><i class="fa-solid fa-cloud-sun-rain"></i> ธรรมชาติ / พักผ่อน</span>
+                    <h2>น้ำตกโตนปลิว</h2>
+                    <div class="info-text"><p>น้ำตกที่ตั้งอยู่ในผืนป่าธรรมชาติอุดมสมบูรณ์ กระแสน้ำไหลผ่านโขดหินลดหลั่นลงมาเป็นชั้นๆ บรรยากาศเงียบสงบคนไม่พลุกพล่าน</p></div>
+                    <div class="highlight-box"><b>🌟 จุดไฮไลท์:</b> เล่นน้ำในแอ่งน้ำธรรมชาติใสสะอาด และพักผ่อนฟังเสียงนกป่า</div>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <div class="image-box"><img src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&q=80&w=800" alt="พระตำหนักเขาน้อย"></div>
+                <div class="info-box">
+                    <span class="tag"><i class="fa-solid fa-landmark"></i> สถาปัตยกรรม / วัฒนธรรม</span>
+                    <h2>พระตำหนักเขาน้อย</h2>
+                    <div class="info-text"><p>อาคารสถาปัตยกรรมยุโรปคลาสสิกที่ตั้งอยู่เชิงเขาน้อย อดีตเคยเป็นที่ประทับของสมเด็จพระเจ้าบรมวงศ์เธอ เจ้าฟ้ายุคลทิฆัมพรฯ</p></div>
+                    <div class="highlight-box"><b>🌟 จุดไฮไลท์:</b> ชมความสวยงามของตัวอาคารโบราณและแวะสวนสาธารณะเขาน้อยที่ร่มรื่นใกล้ๆ</div>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <div class="image-box"><img src="https://images.unsplash.com/photo-1534567153574-2b12153a87f0?auto=format&fit=crop&q=80&w=800" alt="สวนสัตว์สงขลา"></div>
+                <div class="info-box">
+                    <span class="tag"><i class="fa-solid fa-paw"></i> ครอบครัว / ส่องสัตว์</span>
+                    <h2>สวนสัตว์สงขลา</h2>
+                    <div class="info-text"><p>สวนสัตว์แห่งแรกของภาคใต้ ตั้งอยู่ท่ามกลางบรรยากาศภูเขาและธรรมชาติ รวบรวมสัตว์ป่าหลากชนิดทั้งไทยและต่างประเทศ</p></div>
+                    <div class="highlight-box"><b>🌟 จุดไฮไลท์:</b> ส่วนจัดแสดงเสือ, ขบวนพาเหรดนกเพนกวิน และจุดชมวิวทะเลอ่าวไทยสุดเอ็กซ์คลูซีฟ</div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2026 Songkhla Vibe. ออกแบบด้วยความรักเพื่อจังหวัดสงขลา. นายฐิติพงษ์ พันธ์ยักษ์ ปวช.2/2 เทคโนโลยีธุรกิจดิจิทัล</p>
+    </footer>
+
+    <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="เปลี่ยนโหมดหน้าจอ">
+        <i class="fa-solid fa-moon" id="themeIcon"></i>
+    </button>
+
+    <button class="chat-toggle" id="chatToggle"><i class="fa-solid fa-comments"></i> คุยกับไกด์</button>
+    <div class="chat-box" id="chatBox">
+        <div class="chat-header">
+            <h4>👨🏻‍🦱 Thitipong AI Guide</h4>
+            <button id="closeChat">✕</button>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-area">
+            <input type="text" id="userInput" placeholder="พิมพ์ถามคำถามที่นี่...">
+            <button id="sendBtn">ส่ง</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 1. ระบบสลับ Dark / Light Mode ====================
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            const themeIcon = document.getElementById('themeIcon');
+            if (savedTheme === 'dark') {
+                themeIcon.className = 'fa-solid fa-sun';
+            } else {
+                themeIcon.className = 'fa-solid fa-moon';
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            let newTheme = 'light';
+            const themeIcon = document.getElementById('themeIcon');
+
+            if (currentTheme === 'light') {
+                newTheme = 'dark';
+                themeIcon.className = 'fa-solid fa-sun';
+            } else {
+                newTheme = 'light';
+                themeIcon.className = 'fa-solid fa-moon';
+            }
+
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        // ==================== 2. ระบบควบคุมกล่องแชทบอท AI (Chat Engine) ====================
+        const chatToggle = document.getElementById('chatToggle');
+        const chatBox = document.getElementById('chatBox');
+        const closeChat = document.getElementById('closeChat');
+        const sendBtn = document.getElementById('sendBtn');
+        const userInput = document.getElementById('userInput');
+        const chatMessages = document.getElementById('chatMessages');
+
+        chatToggle.addEventListener('click', () => {
+            chatBox.style.display = chatBox.style.display === 'flex' ? 'none' : 'flex';
+            scrollToBottom();
+        });
+        closeChat.addEventListener('click', () => { chatBox.style.display = 'none'; });
+        function scrollToBottom() { chatMessages.scrollTop = chatMessages.scrollHeight; }
+
+        function appendMessage(text, className) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${className}`;
+            msgDiv.innerHTML = text;
+            chatMessages.appendChild(msgDiv);
+            scrollToBottom();
+        }
+
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            appendMessage(text, 'user-message');
+            userInput.value = '';
+
+            const typingId = 'typing-' + Date.now();
+            const typingMsg = document.createElement('div');
+            typingMsg.className = 'message ai-message';
+            typingMsg.id = typingId;
+            typingMsg.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ไกด์กำลังค้นหาข้อมูลสด...';
+            chatMessages.appendChild(typingMsg);
+            scrollToBottom();
+
+            try {
+                const response = await fetch('http://localhost:6767/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+                
+                const data = await response.json();
+                const typingElement = document.getElementById(typingId);
+                if (typingElement) typingElement.remove();
+                appendMessage(data.reply, 'ai-message');
+
+            } catch (error) {
+                const typingElement = document.getElementById(typingId);
+                if (typingElement) typingElement.remove();
+                appendMessage('⚠️ ไม่สามารถเชื่อมต่อกับ AI หลังบ้านได้ กรุณาตรวจสอบว่าเปิดรันเซิร์ฟเวอร์บนพอร์ต 6767 หรือยังครับ', 'ai-message');
+                console.error(error);
+            }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+
+        window.onload = function() {
+            initTheme();
+            displayMarkers('all');
+            startHeroSlider(); // เรียกใช้งานภาพพื้นหลังสไลด์หน้าปก
+            appendMessage("สวัสดีครับ! ผมคือ <b>Thitipong AI Guide</b> ไกด์ท้องถิ่นของสงขลา 🌊 ค้นหาข้อมูลสดใหม่ผ่านเซิร์ฟเวอร์ได้ทันที อยากให้ผมช่วยแนะนำที่เที่ยว ที่กิน หรือจัดตารางเดินทาง พิมพ์คุยสอบถามมาได้เลยครับน่ะ!", "ai-message");
+        };
+    </script>
+</body>
+</html>

@@ -1,4 +1,12 @@
 import 'dotenv/config';
+import path from 'path'; // ต้องเพิ่มบรรทัดนี้ที่ด้านบนของไฟล์ด้วยครับ
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 import express from 'express';
 import { GoogleGenAI } from '@google/genai';
 import cors from 'cors';
@@ -9,6 +17,7 @@ const md = new MarkdownIt({ html: true });
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static('./')); // ถ้าไฟล์ HTML อยู่โฟลเดอร์เดียวกับ server.js
 
 console.log("🔑 ตรวจสอบ API Key ปัจจุบัน:", process.env.GEMINI_API_KEY ? "พบคีย์แล้ว (พร้อมใช้งาน)" : "❌ ไม่พบคีย์ (ค่าว่างเปล่า)");
 

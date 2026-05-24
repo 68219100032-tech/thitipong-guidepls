@@ -4,11 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Songkhla Vibe - เที่ยวสงขลา</title>
+    <style>
+        html { scroll-behavior: smooth; } /* เพิ่มความนุ่มนวลเวลาเลื่อนหน้าจอ */
+        .hero-section { position: relative; height: 100vh; width: 100%; display: flex; align-items: center; justify-content: center; text-align: center; color: white; overflow: hidden; }
+        .hero-bg-slider { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; z-index: 1; }
+        .hero-content { position: relative; z-index: 3; }
+        .btn { display: inline-block; padding: 15px 30px; background: #1E40AF; color: #fff; text-decoration: none; border-radius: 30px; margin-top: 20px; transition: 0.3s; }
+        .btn:hover { transform: scale(1.1); background: #46ebdd; }
+    </style>
+</head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Songkhla Vibe - เที่ยวสงขลา</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link rel="icon" href="images/songkhla1.png">
 
     <style>
         /* ==================== 🛠️ CSS Variables สำหรับสลับโหมด ==================== */
@@ -22,267 +35,252 @@
             --card-border: #F1F5F9;
             --nav-bg: rgba(255, 255, 255, 0.9);
             --transition: all 0.3s ease-in-out;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         }
 
         [data-theme="dark"] {
             --bg-color: #0F172A;
             --primary-blue: #3B82F6;
-            --secondary-blue: #60A5FA;
-            --text-dark: #F8FAFC;
+            --secondary-blue: #93C5FD;
+            --text-dark: #F1F5F9;
             --text-light: #94A3B8;
             --white: #1E293B;
             --card-border: #334155;
-            --nav-bg: rgba(30, 41, 59, 0.9);
+            --nav-bg: rgba(15, 23, 42, 0.9);
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Prompt', sans-serif; }
         html { scroll-behavior: smooth; }
-        body { background-color: var(--bg-color); color: var(--text-dark); line-height: 1.6; transition: background-color 0.3s ease, color 0.3s ease; }
+        body { background-color: var(--bg-color); color: var(--text-dark); transition: var(--transition); overflow-x: hidden; }
 
-        /* ==================== Navigation ==================== */
-        nav {
-            position: fixed; top: 0; width: 100%; padding: 20px 50px;
-            display: flex; justify-content: space-between; align-items: center;
-            background-color: var(--nav-bg); backdrop-filter: blur(10px);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 1000; transition: var(--transition);
-        }
-        nav .logo { font-size: 1.5rem; font-weight: 600; color: var(--primary-blue); text-decoration: none; }
-        nav ul { display: flex; list-style: none; gap: 30px; }
-        nav ul li a { text-decoration: none; color: var(--text-dark); transition: var(--transition); }
-        nav ul li a:hover { color: var(--secondary-blue); }
-
-        /* ==================== Hero Section ==================== */
-        .hero {
-            min-height: 100vh;
-            position: relative; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center;    
-            text-align: center; 
-            padding: 0 20px;
-            overflow: hidden;
-            background-color: #0F172A;
-            transition: var(--transition);
-        }
-
-        .hero-bg-slider {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            z-index: 1;
-            transition: background-image 1.2s ease-in-out;
-        }
-
-        .hero-overlay {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 2;
-            background: linear-gradient(to bottom, rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.65));
-            transition: var(--transition);
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 3;
-            max-width: 850px;
-            padding: 20px;
-        }
+        /* ==================== 🗺️ การตกแต่งแถบเมนู (Navbar) ==================== */
+        header { position: fixed; top: 0; left: 0; width: 100%; background-color: var(--nav-bg); backdrop-filter: blur(10px); border-bottom: 1px solid var(--card-border); z-index: 1000; transition: var(--transition); }
+        .nav-container { max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.4rem; font-weight: 600; color: var(--primary-blue); text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
+        .nav-menu { display: flex; align-items: center; gap: 2rem; list-style: none; }
+        .nav-link { color: var(--text-dark); text-decoration: none; font-size: 1rem; font-weight: 400; transition: var(--transition); }
+        .nav-link:hover, .nav-link.active { color: var(--primary-blue); }
         
-        .hero h1 { 
-            font-size: 3.8rem;
-            color: #FFFFFF; 
-            margin-bottom: 20px; 
-            font-weight: 600;
-            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        .nav-controls { display: flex; align-items: center; gap: 1rem; }
+        .theme-toggle, .lang-toggle { background: none; border: 1px solid var(--card-border); color: var(--text-dark); padding: 0.5rem 0.8rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 0.4rem; transition: var(--transition); background-color: var(--white); }
+        .theme-toggle:hover, .lang-toggle:hover { border-color: var(--primary-blue); color: var(--primary-blue); }
+
+        .mobile-menu-btn { display: none; background: none; border: none; color: var(--text-dark); font-size: 1.4rem; cursor: pointer; }
+        @media (max-width: 768px) {
+            .mobile-menu-btn { display: block; }
+            .nav-menu { position: fixed; top: 70px; left: -100%; width: 100%; height: calc(100vh - 70px); background-color: var(--bg-color); flex-direction: column; align-items: center; padding-top: 3rem; gap: 2.5rem; transition: 0.3s ease-in-out; border-top: 1px solid var(--card-border); }
+            .nav-menu.active { left: 0; }
+            .lang-toggle span { display: none; }
         }
 
-        .hero p { 
-            font-size: 1.3rem; 
-            color: #F1F5F9; 
-            margin-bottom: 15px; 
-            font-weight: 300;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-        }
-
-        /* ข้อความเตือนสีแดงในโซน Hero ตามสั่ง */
-        .map-warning-text {
-            color: #EF4444;
-            font-size: 1.05rem;
-            font-weight: 500;
-            margin-bottom: 30px;
-            display: block;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
-        }
+        /* ==================== HERO SECTION ==================== */
+        .hero-section { position: relative; height: 100vh; width: 100%; display: flex; align-items: center; justify-content: center; text-align: center; color: white; overflow: hidden; margin-top: 0; }
+        .hero-bg-slider { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; transition: background-image 2s ease-in-out; z-index: 1; }
+        .hero-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.65)); z-index: 2; transition: var(--transition); }
+        .hero-content { position: relative; z-index: 3; padding: 0 1rem; max-width: 850px; }
+        .hero-content h1 { font-size: 3.5rem; font-weight: 600; margin-bottom: 1rem; text-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .hero-content p { font-size: 1.2rem; margin: 0 auto; font-weight: 300; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .map-warning-text { color: #F87171; font-size: 0.95rem; font-weight: 400; margin-top: 15px; text-shadow: 0 1px 2px rgba(0,0,0,0.8); display: block; }
         
-        .btn {
-            padding: 14px 35px; background-color: var(--primary-blue); color: #FFFFFF;
-            text-decoration: none; border-radius: 30px; transition: var(--transition);
-            border: 2px solid var(--primary-blue); font-weight: 500; font-size: 1.05rem;
-            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.4);
-        }
-        .btn:hover { background-color: transparent; color: #FFFFFF; border-color: #FFFFFF; transform: scale(1.05); }
+        @media (max-width: 768px) { .hero-content h1 { font-size: 2.5rem; } .hero-content p { font-size: 1rem; } }
 
-        /* ==================== Main Content Layout ==================== */
-        .main-container {
-            max-width: 1300px; margin: 0 auto; padding: 50px 20px;
-            display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 30px;
-            position: relative; z-index: 10;
-        }
-        @media (max-width: 1200px) { .main-container { grid-template-columns: 1fr; } }
-
-        .section-title { font-size: 1.8rem; color: var(--primary-blue); margin-bottom: 25px; display: flex; align-items: center; gap: 10px; font-weight: 600; }
-
-        /* ==================== Interactive Map Style ==================== */
-        .map-wrapper { background: var(--white); padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); border: 1px solid var(--card-border); transition: var(--transition); height: fit-content; }
+        /* ==================== MAIN LAYOUT (1 Column UI) ==================== */
+        .main-layout { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; display: flex; flex-direction: column; gap: 2rem; }
+        .section-title { font-size: 1.6rem; color: var(--primary-blue); margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; font-weight: 600; }
         
-        .filter-container { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
-        .filter-btn {
-            padding: 8px 16px; border: 1px solid var(--card-border); background-color: var(--white);
-            color: var(--text-light); border-radius: 20px; cursor: pointer; font-size: 0.9rem;
-            transition: var(--transition); display: flex; align-items: center; gap: 6px;
-        }
-        .filter-btn:hover { border-color: var(--primary-blue); color: var(--primary-blue); background-color: rgba(59, 130, 246, 0.05); }
-        .filter-btn.active { background-color: var(--primary-blue); color: #FFFFFF; border-color: var(--primary-blue); }
-
-        #map { height: 580px; width: 100%; border-radius: 12px; z-index: 1; border: 1px solid var(--card-border); }
-
+        .filter-container { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+        .filter-btn { background-color: var(--white); border: 1px solid var(--card-border); color: var(--text-dark); padding: 0.6rem 1.2rem; border-radius: 30px; cursor: pointer; transition: var(--transition); font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+        .filter-btn.active, .filter-btn:hover { background-color: var(--primary-blue); color: white; border-color: var(--primary-blue); box-shadow: 0 4px 10px rgba(30, 64, 175, 0.2); }
+        
+        .map-box { background-color: var(--white); border-radius: 20px; border: 1px solid var(--card-border); padding: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        #map { height: 450px; width: 100%; border-radius: 14px; z-index: 1; }
         [data-theme="dark"] .leaflet-tile { filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg); }
         [data-theme="dark"] .leaflet-popup-content-wrapper, [data-theme="dark"] .leaflet-popup-tip { background: #1E293B; color: #F8FAFC; }
 
-        /* ==================== Places Grid Style (Scrollable) ==================== */
-        .places-wrapper { display: flex; flex-direction: column; height: 690px; }
-        .grid { display: grid; grid-template-columns: 1fr; gap: 15px; overflow-y: auto; padding-right: 10px; height: 100%; }
-        
-        .grid::-webkit-scrollbar { width: 6px; }
-        .grid::-webkit-scrollbar-track { background: transparent; }
-        .grid::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 10px; }
-        .grid::-webkit-scrollbar-thumb:hover { background: var(--text-light); }
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+        .card { background-color: var(--white); border-radius: 16px; border: 1px solid var(--card-border); overflow: hidden; transition: var(--transition); display: flex; flex-direction: column; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); cursor: pointer; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 12px 20px rgba(0,0,0,0.08); border-color: var(--primary-blue); }
+        .card-img-wrapper { position: relative; width: 100%; height: 190px; overflow: hidden; }
+        .card-img { width: 100%; height: 100%; object-fit: cover; transition: var(--transition); }
+        .card:hover .card-img { transform: scale(1.05); }
+        .card-tag { position: absolute; top: 1rem; left: 1rem; background-color: rgba(255,255,255,0.95); padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 500; color: var(--primary-blue); backdrop-filter: blur(5px); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .card-body { padding: 1.25rem; display: flex; flex-direction: column; flex-grow: 1; }
+        .card-title { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-text { font-size: 0.9rem; color: var(--text-light); line-height: 1.6; margin-bottom: 1.25rem; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .card-btn { background-color: var(--primary-blue); color: white; border: none; padding: 0.65rem; border-radius: 10px; cursor: pointer; font-weight: 500; text-align: center; text-decoration: none; font-size: 0.9rem; transition: var(--transition); width: 100%; }
+        .card-btn:hover { background-color: var(--secondary-blue); }
 
-        .card { background: var(--white); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.02); transition: var(--transition); cursor: pointer; border: 1px solid var(--card-border); display: flex; height: 120px; }
-        .card:hover { transform: translateX(5px); box-shadow: 0 5px 15px rgba(29, 78, 216, 0.08); border-color: var(--primary-blue); }
-        .card img { width: 150px; height: 100%; object-fit: cover; transition: var(--transition); flex-shrink: 0; }
-        .card-content { padding: 15px; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
-        .card-title { font-size: 1.1rem; color: var(--primary-blue); margin-bottom: 5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .card-desc { color: var(--text-light); font-size: 0.85rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-
-        /* ==================== Gallery Section ==================== */
-        .gallery-section {
-            grid-column: 1 / -1; background: var(--white); padding: 30px; border-radius: 16px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.02); margin-top: 10px; border: 1px solid var(--card-border); transition: var(--transition);
-        }
-        .slider-container { position: relative; width: 100%; overflow: hidden; border-radius: 12px; padding: 10px 0; }
+        /* ==================== แกลเลอรี่ Lightbox ==================== */
+        .slider-section { background-color: var(--white); border-radius: 20px; padding: 2rem; border: 1px solid var(--card-border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .slider-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .slider-title { font-size: 1.3rem; font-weight: 600; }
+        .slider-controls { display: flex; gap: 0.5rem; }
+        .slider-arrow { background: none; border: 1px solid var(--card-border); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-dark); transition: var(--transition); background-color: var(--bg-color); }
+        .slider-arrow:hover { border-color: var(--primary-blue); color: var(--primary-blue); }
+        .slider-container { overflow: hidden; width: 100%; }
         .slider-wrapper { display: flex; transition: transform 0.5s ease-in-out; }
-        .slide-item { min-width: 25%; padding: 0 10px; box-sizing: border-box; }
-        @media (max-width: 992px) { .slide-item { min-width: 50%; } }
-        @media (max-width: 576px) { .slide-item { min-width: 100%; } }
+        .slider-item { min-width: 25%; padding: 0 0.5rem; flex-shrink: 0; }
+        @media (max-width: 992px) { .slider-item { min-width: 50%; } }
+        @media (max-width: 576px) { .slider-item { min-width: 100%; } }
+        .slider-card { border-radius: 12px; overflow: hidden; position: relative; height: 200px; cursor: pointer; }
+        .slider-img { width: 100%; height: 100%; object-fit: cover; transition: var(--transition); }
+        .slider-card:hover .slider-img { transform: scale(1.05); }
+        .slider-overlay { position: absolute; bottom: 0; left: 0; width: 100%; padding: 2rem 1rem 1rem 1rem; background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0)); color: white; }
+        .slider-name { font-size: 1rem; font-weight: 500; }
 
-        .slide-item img { width: 100%; height: 190px; object-fit: cover; border-radius: 10px; cursor: pointer; transition: var(--transition); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-        .slide-item img:hover { transform: scale(1.04); filter: brightness(0.95); }
-        .slide-caption { font-size: 0.9rem; font-weight: 400; margin-top: 10px; color: var(--text-dark); text-align: center; }
-
-        .slider-arrow {
-            position: absolute; top: 50%; transform: translateY(-50%); background-color: var(--white);
-            color: var(--primary-blue); border: none; width: 40px; height: 40px; border-radius: 50%;
-            cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: var(--transition); z-index: 10; border: 1px solid var(--card-border);
-        }
-        .slider-arrow:hover { background-color: var(--primary-blue); color: #FFFFFF; }
-        .arrow-left { left: 10px; }
-        .arrow-right { right: 10px; }
-
-        /* Lightbox */
         .lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.85); z-index: 2000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
         .lightbox.active { display: flex; opacity: 1; }
         .lightbox-content { max-width: 85%; max-height: 80vh; border-radius: 12px; transform: scale(0.9); transition: transform 0.3s ease; }
         .lightbox.active .lightbox-content { transform: scale(1); }
         .lightbox-close { position: absolute; top: 25px; right: 35px; color: #FFFFFF; font-size: 2.5rem; cursor: pointer; }
 
-        /* ==================== Footer & Widgets ==================== */
-        footer { background-color: var(--white); text-align: center; padding: 30px; color: var(--text-light); border-top: 1px solid var(--card-border); margin-top: 40px; transition: var(--transition); }
-
-        .theme-toggle-btn {
-            position: fixed; bottom: 30px; left: 30px; background-color: var(--white);
-            color: var(--text-dark); border: 1px solid var(--card-border); width: 55px; height: 55px;
-            border-radius: 50%; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            display: flex; align-items: center; justify-content: center; font-size: 1.4rem;
-            transition: var(--transition); z-index: 1000;
+        /* ==================== 💬 FLOATING AI CHAT WIDGET (ปรับปรุงตำแหน่งทับกันแล้ว) ==================== */
+        .floating-chat-widget { 
+            position: fixed; 
+            bottom: 2rem; 
+            right: 2rem; 
+            z-index: 2000; 
+            display: block; /* เปลี่ยนเป็น Block เพื่อใช้ Absolute ภายในจัดการตำแหน่ง */
         }
-        .theme-toggle-btn:hover { transform: scale(1.1) rotate(15deg); background-color: var(--primary-blue); color: #FFFFFF; }
-
-        .chat-toggle {
-            position: fixed; bottom: 30px; right: 30px; background-color: var(--primary-blue);
-            color: #FFFFFF; border: none; padding: 15px 25px; border-radius: 30px;
-            font-size: 1rem; cursor: pointer; box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
-            transition: var(--transition); z-index: 1000; display: flex; align-items: center; gap: 8px;
-        }
-        .chat-toggle:hover { transform: translateY(-5px); background-color: var(--secondary-blue); }
-
-        .chat-box {
-            position: fixed; bottom: 90px; right: 30px; width: 380px; height: 520px;
-            background-color: var(--white); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            display: none; flex-direction: column; overflow: hidden; z-index: 1000; border: 1px solid var(--card-border);
-        }
-        .chat-header { background-color: var(--primary-blue); color: #FFFFFF; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
-        .chat-header h4 { font-weight: 500; display: flex; align-items: center; gap: 8px; }
-        .chat-header button { background: none; border: none; color: #FFFFFF; font-size: 1.2rem; cursor: pointer; }
-        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; background-color: var(--bg-color); display: flex; flex-direction: column; gap: 15px; }
-        .message { max-width: 85%; padding: 12px 16px; border-radius: 14px; font-size: 0.95rem; line-height: 1.5; word-wrap: break-word; }
-        .ai-message { background-color: var(--white); color: var(--text-dark); align-self: flex-start; border-bottom-left-radius: 0; border: 1px solid var(--card-border); }
-        .user-message { background-color: var(--primary-blue); color: #FFFFFF; align-self: flex-end; border-bottom-right-radius: 0; }
         
-        .map-link { display: block; margin-top: 8px; padding: 6px 10px; background-color: var(--primary-blue); color: #FFFFFF !important; text-decoration: none !important; border-radius: 6px; font-size: 0.8rem; text-align: center; font-weight: 500; transition: var(--transition); }
-        .map-link:hover { background-color: var(--secondary-blue); }
-
-        .chat-input-area { display: flex; padding: 15px; background-color: var(--white); border-top: 1px solid var(--card-border); gap: 8px; }
-        .chat-input-area input { flex: 1; padding: 10px 18px; border: 1px solid var(--card-border); border-radius: 20px; outline: none; font-size: 0.95rem; background-color: var(--bg-color); color: var(--text-dark); }
-        .chat-input-area button { background-color: var(--primary-blue); color: #FFFFFF; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 500; }
-
-        @media (max-width: 1200px) {
-            .places-wrapper { height: 500px; }
+        .chat-trigger-btn { 
+            width: 65px; 
+            height: 65px; 
+            border-radius: 50%; 
+            background-color: var(--primary-blue); 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 1.8rem; 
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s; 
+            position: relative;
+            z-index: 2002; /* ให้อยู่เหนือหน้าต่างแชทเพื่อกดปิด/เปิด ได้ถนัด */
         }
-        @media (max-width: 768px) {
-            nav { padding: 15px 20px; } nav ul { display: none; }
-            .hero h1 { font-size: 2.5rem; } .hero p { font-size: 1.1rem; }
-            .chat-box { width: 92%; right: 4%; bottom: 80px; height: 70vh; }
-            .chat-toggle { right: 20px; bottom: 20px; }
-            .theme-toggle-btn { left: 20px; bottom: 20px; width: 48px; height: 48px; font-size: 1.2rem; }
-            .card { height: auto; flex-direction: column; }
-            .card img { width: 100%; height: 140px; }
+        .chat-trigger-btn:hover { transform: scale(1.08); background-color: var(--secondary-blue); }
+        .chat-trigger-btn i { transition: transform 0.3s ease; }
+        
+        /* แก้ไขตรงนี้: สั่งให้หน้าต่างแชท (กรอบสีเขียว) วางทับอยู่เหนือปุ่ม (กรอบสีแดง) พอดีตอนกางเปิด */
+        .chat-window { 
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 370px; 
+            height: 500px; 
+            background-color: var(--white); 
+            border-radius: 20px; 
+            border: 1px solid var(--card-border); 
+            box-shadow: var(--shadow); 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+            transform: scale(0.1) translateY(40px); /* ยุบลงหาตัวปุ่มสีแดง */
+            transform-origin: bottom right; 
+            opacity: 0; 
+            pointer-events: none; 
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s; 
+            z-index: 2001;
         }
+        
+        /* สเตตัสเมื่อเปิดใช้งาน คลี่หน้าต่างออกมาบังปุ่มเปิดด้านหลังแบบมีมิติ */
+        .floating-chat-widget.open .chat-window { 
+            transform: scale(1) translateY(0); 
+            opacity: 1; 
+            pointer-events: auto; 
+        }
+        .floating-chat-widget.open .chat-trigger-btn { 
+            background-color: #EF4444; 
+            box-shadow: none; /* เอาเงาออกเพื่อให้เนียนกลืนไปกับหัวกล่องข้อความ */
+            position: absolute;
+            bottom: unset;
+            top: 7px;     /* ดึงเข้าไปจัดแนววางบนแถบ Header แชท */
+            right: 12px;
+            width: 40px;   /* ย่อปุ่มให้เล็กลงพอดีกับดีไซน์แผงปิดกล่อง */
+            height: 40px;
+            font-size: 1.2rem;
+        }
+        
+        @media (max-width: 480px) { 
+            .floating-chat-widget { bottom: 1rem; right: 1rem; left: 1rem; } 
+            .chat-window { width: 100%; height: calc(100vh - 120px); } 
+            .floating-chat-widget.open .chat-trigger-btn { top: 12px; right: 16px; }
+        }
+
+        .chat-header { padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--card-border); display: flex; align-items: center; justify-content: space-between; background-color: var(--white); }
+        .chat-header-left { display: flex; align-items: center; gap: 0.75rem; }
+        .chat-status { width: 9px; height: 9px; background-color: #10B981; border-radius: 50%; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
+        .chat-title { font-weight: 600; font-size: 1rem; margin-right: 45px; } /* ขยับพื้นที่หลบให้ปุ่มวงกลมสีแดง */
+
+        .chat-messages { flex-grow: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; background-color: var(--bg-color); }
+        .message { max-width: 85%; padding: 0.75rem 1rem; border-radius: 16px; font-size: 0.9rem; line-height: 1.5; word-wrap: break-word; }
+        .user-message { background-color: var(--primary-blue); color: white; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 2px 5px rgba(30, 64, 175, 0.1); }
+        /* ตกแต่งลิงก์/ปุ่ม Google Maps ที่ AI ส่งมาให้เป็นกรอบมินิมอล */
+        .ai-message a {display: inline-flex;align-items: center;gap: 6px;margin-top: 8px;padding: 6px 14px;background-color: var(--white);color: var(--primary-blue);border: 1px solid #CBD5E1; /* เส้นขอบสีเทาอ่อน สไตล์มินิมอล */border-radius: 8px;        /* ความโค้งมนมนพอดี */text-decoration: none;     /* เอาเส้นใต้ข้อความออก */font-size: 0.85rem;font-weight: 500;transition: var(--transition);}
+        /* เอฟเฟกต์ตอนเอาเมาส์ไปชี้ (Hover) */
+        .ai-message a:hover {background-color: #F1F5F9;border-color: var(--primary-blue); /* เปลี่ยนสีขอบเป็นสีน้ำเงินหลักตอนชี้ */color: var(--primary-blue);transform: translateY(-1px);      /* ขยับขึ้นเล็กน้อยเพิ่มมิติ */}
+        .chat-input-area { padding: 1rem; border-top: 1px solid var(--card-border); display: flex; gap: 0.5rem; background-color: var(--white); }
+        .chat-input { flex-grow: 1; border: 1px solid var(--card-border); padding: 0.75rem 1rem; border-radius: 12px; font-size: 0.9rem; outline: none; background-color: var(--bg-color); color: var(--text-dark); transition: var(--transition); }
+        .chat-input:focus { border-color: var(--primary-blue); background-color: var(--white); }
+        .send-btn { background-color: var(--primary-blue); color: white; border: none; width: 45px; height: 45px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: var(--transition); }
+        .send-btn:hover { opacity: 0.9; }
+
+        footer { text-align: center; padding: 2rem; color: var(--text-light); border-top: 1px solid var(--card-border); margin-top: 40px; font-size: 0.9rem; }
     </style>
 </head>
-<body>
+<body data-theme="light">
 
-    <nav id="navbar">
-        <a href="#" class="logo">Songkhla Vibe.</a>
-        <ul>
-            <li><a href="#home">หน้าแรก</a></li>
-            <li><a href="#explore">สำรวจเมือง</a></li>
-            <li><a href="attractions.html">ข้อมูลสถานที่</a></li>
-            <li><a href="contact.html">ติดต่อ</a></li>
-        </ul>
-    </nav>
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <i class="fa-solid fa-water"></i> Songkhla Vibe
+            </a>
+            
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html" class="nav-link active" id="menuHome">หน้าแรก</a></li>
+                <li><a href="#mainLayout" class="nav-link" id="menuSmartTravel">พิกัดเที่ยวอัจฉริยะ</a></li>
+                <li><a href="attractions.html" class="nav-link" id="menuAttractions">สถานที่ท่องเที่ยว</a></li>
+                <li><a href="contact.html" class="nav-link" id="menuContact">ติดต่อเรา</a></li>
+            </ul>
 
-    <section id="home" class="hero">
-        <div class="hero-bg-slider" id="heroBgSlider"></div>
+            <div class="nav-controls">
+                <button class="theme-toggle" id="themeToggleBtn" onclick="toggleTheme()" title="เปลี่ยนโหมดหน้าจอ">
+                    <i class="fa-solid fa-moon" id="themeIcon"></i>
+                </button>
+                <button class="lang-toggle" id="langToggle" onclick="changeLanguage()">
+                    <i class="fa-solid fa-earth-americas"></i> <span>EN</span>
+                </button>
+                <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                    <i class="fa-solid fa-bars" id="menuIcon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero-section">
+        <div class="hero-bg-slider" id="heroBgSlider" style="background-image: url('images/191191.jpg');"></div>
         <div class="hero-overlay"></div>
         <div class="hero-content">
-            <h1>สัมผัสเสน่ห์... สงขลา</h1>
-            <p>เมืองสองทะเลที่ผสมผสานความคลาสสิกของย่านเมืองเก่า และความงดงามของธรรมชาติได้อย่างลงตัว</p>
-            <span class="map-warning-text"><i class="fa-solid fa-triangle-exclamation"></i> หมุดอาจไม่ได้ตรง100%โปรดเช็คใน Google map ก่อนทุกครั้งก่อนเริ่มเส้นทาง</span>
-            <a href="#explore" class="btn">เริ่มออกเดินทาง</a>
+            <h1 id="heroTitle">สัมผัสเสน่ห์... สงขลา</h1>
+            <p id="heroDesc">เมืองสองทะเลที่ผสมผสานความคลาสสิกของย่านเมืองเก่า และความงดงามของธรรมชาติได้อย่างลงตัว</p>
+            <span class="map-warning-text"><i class="fa-solid fa-triangle-exclamation"></i> หมุดอาจไม่ได้ตรง 100% โปรดเช็คใน Google map ก่อนทุกครั้งก่อนเริ่มเส้นทาง</span>
+            <a href="#mainLayout" class="btn">เริ่มออกเดินทาง</a>
         </div>
     </section>
 
-    <main id="explore" class="main-container">
+    <script>
+        // ฟังก์ชันสไลด์รูปภาพและอื่นๆ
+        function initMap() { console.log("Map Initialized"); }
+        window.onload = () => { initMap(); };
+    </script>
+
+    <main id="mainLayout" class="main-layout">
         
-        <section class="map-wrapper">
-            <h2 class="section-title"><i class="fa-solid fa-map-location-dot"></i> พิกัดเที่ยวอัจฉริยะ</h2>
+        <div>
+            <h2 class="section-title"><i class="fa-solid fa-map-location-dot"></i> พิกัดเที่ยวอัจฉริยะ (18 แห่ง)</h2>
             <div class="filter-container">
                 <button class="filter-btn active" onclick="filterPlaces('all', event)"><i class="fa-solid fa-border-all"></i> ทั้งหมด</button>
                 <button class="filter-btn" onclick="filterPlaces('food', event)"><i class="fa-solid fa-utensils"></i> สายกิน 😋</button>
@@ -290,75 +288,100 @@
                 <button class="filter-btn" onclick="filterPlaces('nature', event)"><i class="fa-solid fa-tree"></i> สายธรรมชาติ 🌳</button>
                 <button class="filter-btn" onclick="filterPlaces('culture', event)"><i class="fa-solid fa-gopuram"></i> สายมู/วัฒนธรรม ⛩️</button>
             </div>
+        </div>
+
+        <div class="map-box">
             <div id="map"></div>
-        </section>
+        </div>
 
-        <section class="places-wrapper">
-            <h2 class="section-title"><i class="fa-solid fa-star"></i> สถานที่ที่ไม่ควรพลาด (18 แห่ง)</h2>
-            <div class="grid" id="placesListGrid">
+        <div class="grid-container" id="placesListGrid"></div>
+
+        <div class="slider-section">
+            <div class="slider-header">
+                <div class="slider-title" id="galleryTitle"><i class="fa-solid fa-images"></i> บรรยากาศเมืองสงขลา</div>
+                <div class="slider-controls">
+                    <button class="slider-arrow" onclick="moveSlider(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button class="slider-arrow" onclick="moveSlider(1)"><i class="fa-solid fa-chevron-right"></i></button>
                 </div>
-        </section>
-
-        <section class="gallery-section">
-            <h2 class="section-title"><i class="fa-solid fa-images"></i> บรรยากาศเมืองสงขลา (Media Gallery)</h2>
+            </div>
             <div class="slider-container">
-                <button class="slider-arrow arrow-left" onclick="moveSlider(-1)"><i class="fa-solid fa-chevron-left"></i></button>
-                <button class="slider-arrow arrow-right" onclick="moveSlider(1)"><i class="fa-solid fa-chevron-right"></i></button>
-                
                 <div class="slider-wrapper" id="sliderWrapper">
-                    <div class="slide-item">
-                        <img src="https://images.unsplash.com/photo-1542668595-fa9394e5b686?auto=format&fit=crop&q=80&w=800" alt="หาดสมิหลา" onclick="openLightbox(this.src)">
-                        <div class="slide-caption">หาดสมิหลา ยามเย็น</div>
+                    <div class="slider-item">
+                        <div class="slider-card" onclick="openLightbox('images/c254545.jpg')">
+                            <img src="images/c254545.jpg" class="slider-img" alt="หาดสมิหลา">
+                            <div class="slider-overlay"><div class="slider-name">หาดสมิหลา ยามเย็น</div></div>
+                        </div>
                     </div>
-                    <div class="slide-item">
-                        <img src="https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&q=80&w=800" alt="เมืองเก่าสงขลา" onclick="openLightbox(this.src)">
-                        <div class="slide-caption">ตึกเก่าชิโนโปรตุกีส</div>
+                    <div class="slider-item">
+                        <div class="slider-card" onclick="openLightbox('images/708411.jpg')">
+                            <img src="images/708411.jpg" class="slider-img" alt="เมืองเก่าสงขลา">
+                            <div class="slider-overlay"><div class="slider-name">หอนาฬิกา</div></div>
+                        </div>
                     </div>
-                    <div class="slide-item">
-                        <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80&w=800" alt="วิวบนเขาตังกวน" onclick="openLightbox(this.src)">
-                        <div class="slide-caption">วิวเมืองสองทะเล บนเขาตังกวน</div>
+                    <div class="slider-item">
+                        <div class="slider-card" onclick="openLightbox('images/54545494.jpg')">
+                            <img src="images/54545494.jpg" class="slider-img" alt="วิวบนเขาตังกวน">
+                            <div class="slider-overlay"><div class="slider-name">วิวเมืองสองทะเล บนเขาตังกวน</div></div>
+                        </div>
                     </div>
-                    <div class="slide-item">
-                        <img src="https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?auto=format&fit=crop&q=80&w=800" alt="สตรีทอาร์ต" onclick="openLightbox(this.src)">
-                        <div class="slide-caption">สตรีทอาร์ต ถนนนางงาม</div>
+                    <div class="slider-item">
+                        <div class="slider-card" onclick="openLightbox('images/19299_0.jpg')">
+                            <img src="images/19299_0.jpg" class="slider-img" alt="สตรีทอาร์ต">
+                            <div class="slider-overlay"><div class="slider-name">สตรีทอาร์ต ถนนนางงาม</div></div>
+                        </div>
                     </div>
-                    <div class="slide-item">
-                        <img src="https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?auto=format&fit=crop&q=80&w=800" alt="สตรีทอาร์ต" onclick="openLightbox(this.src)">
-                        <div class="slide-caption">สตรีทอาร์ต ถนนนางงาม</div>
+                    <div class="slider-item">
+                        <div class="slider-card" onclick="openLightbox('images/191191.jpg')">
+                            <img src="images/191191.jpg" class="slider-img" alt="เกาะยอ">
+                            <div class="slider-overlay"><div class="slider-name">วิถีชีวิตเกาะยอ</div></div>
+                        </div>
                     </div>
-                    <div class="slide-item">
-                        <img src="https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?auto=format&fit=crop&q=80&w=800" alt="สตรีทอาร์ต" onclick="openLightbox(this.src)">
-                        <div class="slide-caption">สตรีทอาร์ต ถนนนางงาม</div>
+                    <div class="slider-item">
+                        <div class="slider-card" onclick="openLightbox('images/676767.jpg')">
+                            <img src="images/676767.jpg" class="slider-img" alt="เจดีย์เขาตังกวน">
+                            <div class="slider-overlay"><div class="slider-name">พระเจดีย์หลวงเขาตังกวน</div></div>
+                        </div>
                     </div>
-                    <div class="slide-item">
-                        <img src="https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?auto=format&fit=crop&q=80&w=800" alt="สตรีทอาร์ต" onclick="openLightbox(this.src)">
-                        <div class="slide-caption">สตรีทอาร์ต ถนนนางงาม</div>
+                    <div class="slider-item">
+                        <div class="slider-card" onclick="openLightbox('images/4794616-170667a.jpg')">
+                            <img src="images/4794616-170667a.jpg" class="slider-img" alt="หาดชลาทัศน์">
+                            <div class="slider-overlay"><div class="slider-name">รูปปั้นนางเงือกทองคำ</div></div>
+                        </div>
+                    </div>
+                    <div class="slider-item">
+                        <div class="slider-card" onclick="openLightbox('images/0W7A0318.jpg')">
+                            <img src="images/0W7A0318.jpg" class="slider-img" alt="SVC mini marathon">
+                            <div class="slider-overlay"><div class="slider-name">SVC mini marathon</div></div>
+                        </div>
+                    </div>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
 
     </main>
 
-    <footer>
-        <p>© 2026 Songkhla Vibe. ออกแบบด้วยความรักเพื่อจังหวัดสงขลา. นายฐิติพงษ์ พันธ์ยักษ์ ปวช.2/2 เทคโนโลยีธุรกิจดิจิทัล</p>
-    </footer>
-
-    <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()">
-        <i class="fa-solid fa-moon" id="themeIcon"></i>
-    </button>
-
-    <button class="chat-toggle" id="chatToggle"><i class="fa-solid fa-comments"></i> คุยกับไกด์</button>
-    <div class="chat-box" id="chatBox">
-        <div class="chat-header">
-            <h4>👨🏻‍🦱 Thitipong AI Guide</h4>
-            <button id="closeChat">✕</button>
+    <div class="floating-chat-widget" id="chatWidget">
+        <div class="chat-window">
+            <div class="chat-header">
+                <div class="chat-header-left">
+                    <div class="chat-status"></div>
+                    <div class="chat-title">Thitipong AI Guide</div>
+                </div>
+                </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai-message">
+                    สวัสดีครับ! ผมคือ <b>Thitipong AI Guide</b> ไกด์ท้องถิ่นของสงขลา 🌊 สามารถสืบค้นข้อมูลที่กินที่เที่ยวอัปเดตใหม่ได้ทันที อยากให้ผมช่วยจัดทริปหรือแนะนำมุมถ่ายรูปสวยๆ พิมพ์มาคุยกันได้เลยครับน่ะ!
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" class="chat-input" id="userInput" placeholder="พิมพ์ข้อความคำถามที่นี่...">
+                <button class="send-btn" id="sendBtn"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
         </div>
-        <div class="chat-messages" id="chatMessages"></div>
-        <div class="chat-input-area">
-            <input type="text" id="userInput" placeholder="พิมพ์ถามคำถามที่นี่...">
-            <button id="sendBtn">ส่ง</button>
-        </div>
+        <button class="chat-trigger-btn" onclick="toggleChat()" title="คุยกับ AI ไกด์สงขลา">
+            <i class="fa-solid fa-comments" id="chatIcon"></i>
+        </button>
     </div>
 
     <div class="lightbox" id="lightboxOverlay" onclick="closeLightbox()">
@@ -366,96 +389,102 @@
         <img class="lightbox-content" id="lightboxImg" src="">
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <footer>
+        <p>© 2026 Songkhla Vibe - วิทยาลัยอาชีวศึกษาสงขลา. All Rights Reserved.</p>
+    </footer>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
-        // ==================== 1. คลังฐานข้อมูลสถานที่ท่องเที่ยว ====================
         const places = [
-            { name: "หาดสมิหลา", category: "photo", lat: 7.2131, lng: 100.5951, img: "https://images.unsplash.com/photo-1542668595-fa9394e5b686?auto=format&fit=crop&q=80&w=400", desc: "โขดหินรูปนางเงือกทองคำอันเป็นสัญลักษณ์คู่เมืองสงขลามาช้านาน" },
-            { name: "เขาตังกวน", category: "culture", lat: 7.2085, lng: 100.5895, img: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80&w=400", desc: "จุดชมวิวเมืองสองทะเลแบบพาโนรามาและเป็นที่ตั้งเจดีย์หลวงโบราณ" },
-            { name: "ย่านเมืองเก่าสงขลา", category: "culture", lat: 7.1945, lng: 100.5898, img: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&q=80&w=400", desc: "ถนนวัฒนธรรมสุดคลาสสิก นครนอก นครใน และถนนนางงาม" },
-            { name: "สะพานติณสูลานนท์", category: "nature", lat: 7.1685, lng: 100.5408, img: "https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&q=80&w=400", desc: "สะพานคอนกรีตยาวเหยียดข้ามทะเลสาบเชื่อมแผ่นดินใหญ่สู่วิถีเกาะยอ" },
-            { name: "เกาะยอ", category: "nature", lat: 7.1594, lng: 100.5358, img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=400", desc: "เกาะกลางทะเลสาบสงขลา แหล่งปลูกผลไม้สมรมและทำประมงพื้นบ้าน" },
-            { name: "วัดแหลมพ้อ", category: "culture", lat: 7.1722, lng: 100.5485, img: "https://images.unsplash.com/photo-1609137144813-2d2077227d81?auto=format&fit=crop&q=80&w=400", desc: "ประดิษฐานพระนอนปางโปรดอสุรินทราหูองค์ใหญ่สีทองอร่ามริมทะเลสาบ" },
-            { name: "พิพิธภัณฑสถานแห่งชาติ สงขลา", category: "culture", lat: 7.1965, lng: 100.5905, img: "https://images.unsplash.com/photo-1566121318359-20f4f9f4f30c?auto=format&fit=crop&q=80&w=400", desc: "อาคารสถาปัตยกรรมจีน-โปรตุกีส จัดแสดงโบราณวัตถุประวัติศาสตร์ใต้" },
-            { name: "สตรีทอาร์ตเมืองเก่าสงขลา", category: "photo", lat: 7.1938, lng: 100.5910, img: "https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?auto=format&fit=crop&q=80&w=400", desc: "ภาพวาดฝาผนังบอกเล่าวิถีชีวิตชาวสงขลาที่ซ่อนตัวอยู่ตามมุมตึก" },
-            { name: "ทะเลสาบสงขลา", category: "nature", lat: 7.2150, lng: 100.5300, img: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&q=80&w=400", desc: "ทะเลสาบน้ำกร่อย-น้ำเค็มขนาดใหญ่ที่มีระบบนิเวศ 3 น้ำที่สมบูรณ์" },
-            { name: "ตลาดกิมหยง", category: "food", lat: 7.0095, lng: 100.4715, img: "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&q=80&w=400", desc: "ตลาดนัดชื่อดังศูนย์รวมสินค้าต่างประเทศและของฝากยอดฮิตแห่งหาดใหญ่" },
-            { name: "ตลาดน้ำคลองแห", category: "food", lat: 7.0468, lng: 100.4742, img: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&q=80&w=400", desc: "ตลาดน้ำย้อนยุคริมคลอง ซื้ออาหารพื้นบ้านอร่อยๆ จากเรือพายของแม่ค้า" },
-            { name: "ตลาดน้ำคลองแดน", category: "food", lat: 7.7212, lng: 100.2785, img: "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&q=80&w=400", desc: "ตลาดน้ำชุมชนประวัติศาสตร์สายวัฒนธรรมบนรอยต่อสองจังหวัด" },
-            { name: "น้ำตกโตนงาช้าง", category: "nature", lat: 6.9565, lng: 100.2312, img: "https://images.unsplash.com/photo-1432406186174-23278d0afdd0?auto=format&fit=crop&q=80&w=400", desc: "น้ำตกชื่อดัง 7 ชั้น ไฮไลท์ชั้นสามสายน้ำไหลแยกเสมือนงาช้างคู่" },
-            { name: "ถ้ำครก", category: "nature", lat: 6.6418, lng: 100.9505, img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&q=80&w=400", desc: "ถ้ำหินงอกหินย้อยธรรมชาติที่มีโพรงหินลักษณะคล้ายครกตำข้าวโบราณ" },
-            { name: "ถ้ำน้ำใส", category: "nature", lat: 6.6385, lng: 100.9320, img: "https://images.unsplash.com/photo-1523731407965-2430cd12f5e4?auto=format&fit=crop&q=80&w=400", desc: "ถ้ำลึกลับที่มีแอ่งลำธารน้ำใสแจ๋วเย็นฉ่ำไหลผ่านตลอดทั้งปี" },
-            { name: "น้ำตกโตนปลิว", category: "nature", lat: 6.9325, lng: 100.2040, img: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&q=80&w=400", desc: "น้ำตกใสบรรยากาศเงียบสงบซ่อนตัวในผืนป่าดิบชื้นร่มรื่น" },
-            { name: "พระตำหนักเขาน้อย", category: "culture", lat: 7.2021, lng: 100.5986, img: "https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&q=80&w=400", desc: "อาคารสถาปัตยกรรมยุโรปโบราณอันทรงคุณค่าทางประวัติศาสตร์เชิงเขาน้อย" },
-            { name: "สวนสัตว์สงขลา", category: "nature", lat: 7.1415, lng: 100.6052, img: "https://images.unsplash.com/photo-1534567153574-2b12153a87f0?auto=format&fit=crop&q=80&w=400", desc: "สวนสัตว์ป่าธรรมชาติบนภูเขาแห่งแรกของภาคใต้ พร้อมจุดชมวิวอ่าวไทย" }
+            { name: "หาดสมิหลา", category: "photo", lat: 7.2152, lng: 100.5953, img: "images/19282_0.jpg", desc: "โขดหินรูปนางเงือกทองคำอันเป็นสัญลักษณ์คู่เมืองสงขลามาช้านาน" },
+            { name: "เขาตังกวน", category: "culture", lat: 7.2104, lng: 100.5893, img: "images/19316_0.jpg", desc: "จุดชมวิวเมืองสองทะเลแบบพาโนรามาและเป็นที่ตั้งเจดีย์หลวงโบราณ" },
+            { name: "ย่านเมืองเก่าสงขลา", category: "culture", lat: 7.1930, lng: 100.5902, img: "images/19297_0.jpg", desc: "ถนนวัฒนธรรมสุดคลาสสิก นครนอก นครใน และถนนนางงาม" },
+            { name: "สะพานติณสูลานนท์", category: "nature", lat: 7.1536, lng: 100.5597, img: "images/19296_0.jpg", desc: "สะพานคอนกรีตยาวเหยียดข้ามทะเลสาบเชื่อมแผ่นดินใหญ่สู่วิถีเกาะยอ" },
+            { name: "เกาะยอ", category: "nature", lat: 7.1625, lng: 100.5437, img: "images/19287_0.jpg", desc: "เกาะกลางทะเลสาบสงขลา แหล่งปลูกผลไม้สมรมและทำประมงพื้นบ้าน" },
+            { name: "วัดแหลมพ้อ", category: "culture", lat: 7.1585, lng: 100.5567, img: "images/19286_0.jpg", desc: "ประดิษฐานพระนอนปางโปรดอสุรินทราหูองค์ใหญ่สีทองอร่ามริมทะเลสาบ" },
+            { name: "พิพิธภัณฑสถานแห่งชาติ สงขลา", category: "culture", lat: 7.2023, lng: 100.5885, img: "images/19302_0.jpg", desc: "อาคารสถาปัตยกรรมจีน-โปรตุกีส จัดแสดงโบราณวัตถุประวัติศาสตร์ใต้" },
+            { name: "สตรีทอาร์ตเมืองเก่าสงขลา", category: "photo", lat: 7.1930, lng: 100.5902, img: "images/19300_0.jpg", desc: "ภาพวาดฝาผนังบอกเล่าวิถีชีวิตชาวสงขลาที่ซ่อนตัวอยู่ตามมุมตึก" },
+            { name: "ทะเลสาบสงขลา", category: "nature", lat: 7.2095, lng: 100.4621, img: "images/19304_0.jpg", desc: "ทะเลสาบน้ำกร่อย-น้ำเค็มขนาดใหญ่ที่มีระบบนิเวศ 3 น้ำที่สมบูรณ์" },
+            { name: "ตลาดกิมหยง", category: "food", lat: 7.0085, lng: 100.4701, img: "images/19284_0.jpg", desc: "ตลาดนัดชื่อดังศูนย์รวมสินค้าต่างประเทศและของฝากยอดฮิตแห่งหาดใหญ่" },
+            { name: "ตลาดน้ำคลองแห", category: "food", lat: 7.0462, lng: 100.4743, img: "images/19310_0.jpg", desc: "ตลาดน้ำย้อนยุคริมคลอง ซื้ออาหารพื้นบ้านอร่อยๆ จากเรือพายของแม่ค้า" },
+            { name: "ตลาดน้ำคลองแดน", category: "food", lat: 7.9151, lng: 100.3062, img: "images/19308_0.jpg", desc: "ตลาดน้ำชุมชนประวัติศาสตร์สายวัฒนธรรมบนรอยต่อสองจังหวัด" },
+            { name: "น้ำตกโตนงาช้าง", category: "nature", lat: 6.9499, lng: 100.2340, img: "images/19292_0.jpg", desc: "น้ำตกชื่อดัง 7 ชั้น ไฮไลท์ชั้นสามสายน้ำไหลแยกเสมือนงาช้างคู่" },
+            { name: "ถ้ำครก", category: "nature", lat: 6.6142, lng: 100.8531, img: "images/19290_0.jpg", desc: "ถ้ำหินงอกหินย้อยธรรมชาติที่มีโพรงหินลักษณะคล้ายครกตำข้าวโบราณ" },
+            { name: "ถ้ำน้ำใส", category: "nature", lat: 6.6385, lng: 100.9320, img: "images/19313_0.jpg", desc: "ถ้ำลึกลับที่มีแอ่งลำธารน้ำใสแจ๋วเย็นฉ่ำไหลผ่านตลอดทั้งปี" },
+            { name: "น้ำตกโตนปลิว", category: "nature", lat: 6.9985, lng: 100.2338, img: "images/19306_0.jpg", desc: "น้ำตกใสบรรยากาศเงียบสงบซ่อนตัวในผืนป่าดิบชื้นร่มรื่น" },
+            { name: "พระตำหนักเขาน้อย", category: "culture", lat: 7.2090, lng: 100.5932, img: "images/19312_0.jpg", desc: "อาคารสถาปัตยกรรมยุโรปโบราณอันทรงคุณค่าทางประวัติศาสตร์เชิงเขาน้อย" },
+            { name: "สวนสัตว์สงขลา", category: "nature", lat: 7.1431, lng: 100.6047, img: "images/19294_0.jpg", desc: "สวนสัตว์ป่าธรรมชาติบนภูเขาแห่งแรกของภาคใต้ พร้อมจุดชมวิวอ่าวไทย" }
         ];
 
-        // ==================== 2. ระบบควบคุมแผนที่ Leaflet Map ====================
-        const map = L.map('map').setView([7.1990, 100.5912], 11);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
+        let map, markersGroup;
 
-        let markerGroup = L.layerGroup().addTo(map);
+        function initMap() {
+            map = L.map('map').setView([7.1990, 100.5912], 11);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(map);
+            markersGroup = L.layerGroup().addTo(map);
+            renderContent('all');
+        }
 
-        // ฟังก์ชันสร้างการ์ดรายชื่อทางขวาและหมุดบนแผนที่พร้อมกัน
-        function renderContent(categoryFilter) {
-            markerGroup.clearLayers();
-            const gridContainer = document.getElementById('placesListGrid');
-            gridContainer.innerHTML = ''; 
+        function renderContent(category) {
+            const grid = document.getElementById('placesListGrid');
+            grid.innerHTML = '';
+            markersGroup.clearLayers();
+            
+            const filtered = category === 'all' ? places : places.filter(p => p.category === category);
+            
+            filtered.forEach(place => {
+                let tagText = place.category === 'nature' ? 'สายธรรมชาติ 🌳' :
+                              place.category === 'culture' ? 'สายมู/วัฒนธรรม ⛩️' :
+                              place.category === 'food' ? 'สายกิน 😋' : 'สายถ่ายรูป 📸';
 
-            places.forEach(place => {
-                if (categoryFilter === 'all' || place.category === categoryFilter) {
-                    // 1. ปักหมุดแผนที่และแก้รูปแบบ String ของลิงก์ด้วย Backtick (``) เพื่อป้องกัน JavaScript พัง
-                    const marker = L.marker([place.lat, place.lng]);
-                    const popupHTML = `
-                        <div style="min-width:160px;">
-                            <strong style="color:#1E40AF; font-size:14px;">${place.name}</strong>
-                            <p style="font-size:12px; margin:4px 0; color:var(--text-light);">${place.desc}</p>
-                            <a href="https://www.google.com/maps?q=${place.lat},${place.lng}" target="_blank" class="map-link">🗺️ เปิด Google Maps</a>
-                        </div>
-                    `;
-                    marker.bindPopup(popupHTML);
-                    markerGroup.addLayer(marker);
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => focusOnMap(place.lat, place.lng, 14);
+                card.innerHTML = `
+                    <div class="card-img-wrapper">
+                        <img src="${place.img}" class="card-img" alt="${place.name}">
+                        <span class="card-tag">${tagText}</span>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title">${place.name}</h3>
+                        <p class="card-text">${place.desc}</p>
+                        <button class="card-btn">ดูพิกัดบนแผนที่</button>
+                    </div>
+                `;
+                grid.appendChild(card);
 
-                    // 2. สร้างโครงสร้างการ์ด HTML ฝั่งขวา
-                    const cardHTML = `
-                        <div class="card" onclick="focusMap(${place.lat}, ${place.lng}, 14)">
-                            <img src="${place.img}" alt="${place.name}">
-                            <div class="card-content">
-                                <h3 class="card-title">${place.name}</h3>
-                                <p class="card-desc">${place.desc}</p>
-                            </div>
-                        </div>
-                    `;
-                    gridContainer.innerHTML += cardHTML;
-                }
+                const popupHTML = `
+                    <div style="min-width:160px; text-align:center;">
+                        <strong style="color:var(--primary-blue); font-size:14px;">${place.name}</strong>
+                        <p style="font-size:12px; margin:6px 0; color:var(--text-light);">${place.desc}</p>
+                        <a href="http://maps.google.com/?q=${place.lat},${place.lng}" target="_blank" style="display: block; margin-top: 10px; padding: 8px 10px; background-color: var(--primary-blue); color: #FFFFFF; text-decoration: none; border-radius: 6px; font-size: 0.8rem; font-weight: 500;">🗺️ เปิด Google Maps</a>
+                    </div>
+                `;
+                const marker = L.marker([place.lat, place.lng]).bindPopup(popupHTML);
+                markersGroup.addLayer(marker);
             });
         }
 
         function filterPlaces(category, event) {
-            const buttons = document.querySelectorAll('.filter-btn');
-            buttons.forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             event.currentTarget.classList.add('active');
             renderContent(category);
         }
 
-        function focusMap(lat, lng, zoomLevel) {
-            map.setView([lat, lng], zoomLevel);
-            markerGroup.eachLayer(function(marker) {
-                if (marker.getLatLng().lat === lat && marker.getLatLng().lng === lng) {
-                    marker.openPopup();
-                }
+        function focusOnMap(lat, lng, zoomLvl) {
+            map.setView([lat, lng], zoomLvl);
+            markersGroup.eachLayer(marker => {
+                if(marker.getLatLng().lat === lat && marker.getLatLng().lng === lng) marker.openPopup();
             });
-            document.getElementById('explore').scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('map').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
-        // ==================== 3. ระบบควบคุมสลับภาพหน้าปก Hero Background ====================
+        // ==================== ระบบสลับรูปหน้าปก ====================
         const backgroundImages = [
-            "https://images.unsplash.com/photo-1542668595-fa9394e5b686?auto=format&fit=crop&q=80&w=1600",
-            "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&q=80&w=1600",
-            "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80&w=1600"
+            "images/41435_n.jpg",
+            "images/8674220342781_n.jpg",
+            "images/64.jpg",
+            "images/19303_0.jpg"
         ];
         let currentBgIndex = 0;
         function changeHeroBackground() {
@@ -463,58 +492,42 @@
             currentBgIndex = (currentBgIndex + 1) % backgroundImages.length;
         }
 
-        // ==================== 4. 🌗 ระบบสลับ Dark Mode & Light Mode ====================
-        function initTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            document.getElementById('themeIcon').className = savedTheme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        // ==================== ฟังก์ชันควบคุมกล่องแชททับซ้อน ====================
+        function toggleChat() {
+            const widget = document.getElementById('chatWidget');
+            const icon = document.getElementById('chatIcon');
+            widget.classList.toggle('open');
+            if (widget.classList.contains('open')) {
+                icon.className = 'fa-solid fa-xmark';
+                setTimeout(() => { document.getElementById('userInput').focus(); }, 400);
+            } else {
+                icon.className = 'fa-solid fa-comments';
+            }
         }
 
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            document.getElementById('themeIcon').className = newTheme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-            localStorage.setItem('theme', newTheme);
-        }
-
-        // ==================== 5. กล่องแชทบอท AI ตัวช่วยแนะนำข้อมูลสด ====================
-        const chatToggle = document.getElementById('chatToggle');
-        const chatBox = document.getElementById('chatBox');
-        const closeChat = document.getElementById('closeChat');
-        const sendBtn = document.getElementById('sendBtn');
-        const userInput = document.getElementById('userInput');
+        // ==================== การส่งข้อความแชท AI หลังบ้าน ====================
         const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
 
-        chatToggle.addEventListener('click', () => {
-            chatBox.style.display = chatBox.style.display === 'flex' ? 'none' : 'flex';
-            scrollToBottom();
-        });
-        closeChat.addEventListener('click', () => { chatBox.style.display = 'none'; });
-        function scrollToBottom() { chatMessages.scrollTop = chatMessages.scrollHeight; }
-
-        function appendMessage(text, className) {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${className}`;
-            msgDiv.innerHTML = text;
-            chatMessages.appendChild(msgDiv);
-            scrollToBottom();
-        }
-
-        async function sendMessage() {
+        async function handleSendMessage() {
             const text = userInput.value.trim();
-            if (!text) return;
+            if(!text) return;
 
-            appendMessage(text, 'user-message');
+            const userDiv = document.createElement('div');
+            userDiv.className = 'message user-message';
+            userDiv.innerText = text;
+            chatMessages.appendChild(userDiv);
             userInput.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
 
             const typingId = 'typing-' + Date.now();
-            const typingMsg = document.createElement('div');
-            typingMsg.className = 'message ai-message';
-            typingMsg.id = typingId;
-            typingMsg.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังคิด...';
-            chatMessages.appendChild(typingMsg);
-            scrollToBottom();
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message ai-message';
+            typingDiv.id = typingId;
+            typingDiv.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังคิดหาข้อมูล...';
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
 
             try {
                 const response = await fetch('http://localhost:6767/api/chat', {
@@ -522,39 +535,112 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: text })
                 });
-                
                 const data = await response.json();
                 document.getElementById(typingId).remove();
-                appendMessage(data.reply, 'ai-message');
 
+                const aiDiv = document.createElement('div');
+                aiDiv.className = 'message ai-message';
+                aiDiv.innerHTML = data.reply;
+                chatMessages.appendChild(aiDiv);
             } catch (error) {
                 document.getElementById(typingId).remove();
-                appendMessage('⚠️ ไม่สามารถเชื่อมต่อกับ AI หลังบ้านได้ กรุณาตรวจสอบว่าเปิดรันเซิร์ฟเวอร์บนพอร์ต 6767 หรือยังครับ', 'ai-message');
-                console.error(error);
+                const errDiv = document.createElement('div');
+                errDiv.className = 'message ai-message';
+                errDiv.innerHTML = '⚠️ ไม่สามารถเชื่อมต่อกับ AI หลังบ้านได้ กรุณาตรวจสอบว่าเปิดรันเซิร์ฟเวอร์เซสชันพอร์ต 6767 หรือยังครับ';
+                chatMessages.appendChild(errDiv);
+            }
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        sendBtn.addEventListener('click', handleSendMessage);
+        userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSendMessage(); });
+
+        // ==================== ฟังก์ชันโหมด/สไลด์อื่นๆ ====================
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+    
+        // อัปเดตไอคอนให้ตรงกับธีมที่บันทึกไว้
+            const themeIcon = document.getElementById('themeIcon');
+            if (themeIcon) {
+                themeIcon.className = savedTheme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
             }
         }
 
-        sendBtn.addEventListener('click', sendMessage);
-        userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+        // 2. ฟังก์ชันสลับธีม (เรียกใช้เมื่อกดปุ่ม)
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    
+                // เปลี่ยน Attribute และบันทึกลง LocalStorage
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+    
+            // เปลี่ยนไอคอน
+            const themeIcon = document.getElementById('themeIcon');
+            if (themeIcon) {
+            themeIcon.className = newTheme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+            }
+        }
 
-        // ==================== 6. แกลเลอรี่ภาพสไลด์เปิด Lightbox ====================
-        let currentSlideIndex = 0;
+// 3. ฟังก์ชันเปิด/ปิดเมนูบนมือถือ
+function toggleMobileMenu() {
+    const menu = document.getElementById('navMenu');
+    const menuIcon = document.getElementById('menuIcon');
+    
+    if (menu) {
+        menu.classList.toggle('active');
+        
+        // ถ้ามีไอคอนเมนู ให้สลับรูปกากบาทกับขีดสามขีด
+        if (menuIcon) {
+            menuIcon.className = menu.classList.contains('active') 
+                ? 'fa-solid fa-xmark' 
+                : 'fa-solid fa-bars';
+        }
+    }
+}
+
+// --- ส่วนสำคัญ: ทำให้ระบบทำงานทันทีเมื่อโหลดหน้าจอ ---
+// ใช้ DOMContentLoaded จะทำงานเร็วกว่า window.onload
+document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
+});
+
+        let currentLang = 'th';
+        function changeLanguage() {
+            currentLang = currentLang === 'th' ? 'en' : 'th';
+            document.getElementById('langToggle').querySelector('span').innerText = currentLang === 'th' ? 'EN' : 'TH';
+            if(currentLang === 'en') {
+                document.getElementById('heroTitle').innerText = "Experience Songkhla Vibe";
+                document.getElementById('heroDesc').innerText = "Discover nature, street art culture, and local delicacies with us.";
+            } else {
+                document.getElementById('heroTitle').innerText = "สัมผัสเสน่ห์... สงขลา";
+                document.getElementById('heroDesc').innerText = "เมืองสองทะเลที่ผสมผสานความคลาสสิกของย่านเมืองเก่า และความงดงามของธรรมชาติได้อย่างลงตัว";
+            }
+        }
+
+        let currentSlide = 0;
         function moveSlider(direction) {
             const wrapper = document.getElementById('sliderWrapper');
-            let itemsToShow = window.innerWidth <= 576 ? 1 : (window.innerWidth <= 992 ? 2 : 4);
-            currentSlideIndex = (currentSlideIndex + direction + 4) % 4;
-            wrapper.style.transform = `translateX(-${currentSlideIndex * (100 / itemsToShow)}%)`;
+            const itemWidth = window.innerWidth <= 576 ? 100 : (window.innerWidth <= 992 ? 50 : 25);
+            currentSlide = (currentSlide + direction + 7) % 7;
+            wrapper.style.transform = `translateX(-${currentSlide * itemWidth}%)`;
         }
-        function openLightbox(src) { const lb = document.getElementById('lightboxOverlay'); document.getElementById('lightboxImg').src = src; lb.classList.add('active'); }
-        function closeLightbox() { document.getElementById('lightboxOverlay').classList.remove('active'); }
 
-        window.onload = function() {
-            initTheme();
-            renderContent('all');
-            changeHeroBackground();
-            setInterval(changeHeroBackground, 2500); // วนรูปภาพสไลด์ปกหลังทุกๆ 5 วินาที
-            appendMessage("สวัสดีครับ! ผมคือ <b>Thitipong AI Guide</b> ไกด์ท้องถิ่นของสงขลา 🌊 ค้นหาข้อมูลสดใหม่ผ่านเซิร์ฟเวอร์ได้ทันที อยากให้ผมช่วยแนะนำที่เที่ยว ที่กิน หรือจัดตารางเดินทาง พิมพ์คุยสอบถามมาได้เลยครับ", "ai-message");
+        function openLightbox(src) {
+            const lb = document.getElementById('lightboxOverlay');
+            document.getElementById('lightboxImg').src = src;
+            lb.classList.add('active');
+        }
+        function closeLightbox() {
+            document.getElementById('lightboxOverlay').classList.remove('active');
+        }
+
+        window.onload = () => { 
+            initMap(); 
+            setInterval(changeHeroBackground, 2500); 
         };
+
     </script>
 </body>
 </html>

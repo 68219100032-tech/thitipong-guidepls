@@ -530,7 +530,7 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
             try {
-                const response = await fetch('http://localhost:6767/api/chat', {
+                const response = await fetch('https://songkhlasvc.onrender.com/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: text })
@@ -546,7 +546,7 @@
                 document.getElementById(typingId).remove();
                 const errDiv = document.createElement('div');
                 errDiv.className = 'message ai-message';
-                errDiv.innerHTML = '⚠️ ไม่สามารถเชื่อมต่อกับ AI หลังบ้านได้ กรุณาตรวจสอบว่าเปิดรันเซิร์ฟเวอร์เซสชันพอร์ต 6767 หรือยังครับ';
+                errDiv.innerHTML = '⚠️ ไม่สามารถเชื่อมต่อกับ AI ได้ กรุณาตรวจสอบว่าเซิร์ฟเวอร์เปิดใช้งานอยู่';
                 chatMessages.appendChild(errDiv);
             }
             chatMessages.scrollTop = chatMessages.scrollHeight;

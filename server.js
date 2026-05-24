@@ -1,19 +1,19 @@
 import 'dotenv/config';
 import path from 'path'; // ต้องเพิ่มบรรทัดนี้ที่ด้านบนของไฟล์ด้วยครับ
 import { fileURLToPath } from 'url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
 import express from 'express';
 import { GoogleGenAI } from '@google/genai';
 import cors from 'cors';
 import MarkdownIt from 'markdown-it';
 
+
 const app = express();
 const md = new MarkdownIt({ html: true });
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 app.use(cors());
 app.use(express.json());
@@ -69,5 +69,5 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
-const PORT = 6767;
+const PORT = process.env.PORT || 6767;
 app.listen(PORT, () => console.log(`🚀 เซิร์ฟเวอร์ไกด์สงขลาตัวเต็ม พร้อมรันแล้วบนพอร์ต ${PORT}!`));
